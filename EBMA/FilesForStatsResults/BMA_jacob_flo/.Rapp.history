@@ -1,0 +1,271 @@
+jacob
+library(ICEWS2)#
+help(ICEWS2)#
+data(icews)#
+data(Wmatrices)#
+library(nlme)#
+model.polisci <-lme(insurgency ~ xconst + parreg + nminorities + nminorities.l3, data = icews, random = ~ 1 | country)#
+summary(model.polisci)#
+lme.sim.polisci<-simulate.lme(model.polisci, nsim=1000, seed=10)#
+#
+glm.model.econ <-glm(insurgency ~ insurgency.l3 + gdppc.l3 + gdpgrowth, data = icews)#
+summary(lm.model.econ)#
+glm.econ.sim<-simulate(lm.model.econ, nsim=1000, seed=10)#
+#
+model.lme.econ<-lme(insurgency ~ + gdpgrowth + nminorities, data=icews, random= ~ 1 + gdppc.l3 + pop.l3 | country)#
+summary(model.lme.polisci)#
+lme.sim.econ<-simulate.lme(model.lme.econ, nsim=1000,seed=10)
+summary(lm.model.econ)
+model.polisci <-lme(insurgency ~ xconst + parreg + nminorities + nminorities.l3, data = icews, random = ~ 1 | country)#
+summary(model.polisci)
+lme.sim.polisci<-simulate.lme(model.polisci, nsim=1000, seed=10)
+head(lme.sim.polisci)
+class(lme.sim.polisci)
+dim(lme.sim.polisci)
+str(lme.sim.polisci)
+dim(lme.sim.polixci)
+dim(lme.sim.polisci$ML)
+str(lme.sim.polisci$ML)
+head(lme.sim.polisci$ML)
+(lme.sim.polisci$ML)
+(lme.sim.polisci
+)
+?simulate.lme
+#
+lme.sim.polisci<-simulate(model.polisci, nsim=1000, seed=1234)
+str(lme.sim.polisci)
+lme.sim.polisci
+?simulate.lme
+model.polisci <-lmer(insurgency ~ xconst + parreg + nminorities + nminorities.l3, data = icews, random = ~ 1 | country)#
+summary(model.polisci)#
+lme.sim.polisci<-simulate(model.polisci, nsim=1000, seed=1234)
+#
+lme.sim.polisci<-simulate(model.polisci, nsim=5, seed=1234)
+lme.sim.polisci
+#
+model.polisci <-lmer(insurgency ~ xconst + parreg + nminorities + nminorities.l3 + (1 | country), data = icews)
+summary(model.polisci)#
+lme.sim.polisci<-simulate(model.polisci, nsim=5, seed=1234)
+lme.sim.polisci
+?simulate.mer
+simulate.lmer
+?ssimulate.lmer
+?simulate.lmer
+?by
+library(ICEWS2)
+?lmer
+lmer
+?family
+?gaussian
+library(foreign)#
+setwd("/Volumes/ICEWS Project/BMA Stuffs/BMA_jacob_flo/")#
+SAE.
+SAE.data <- read.dta("ICEWS2.build3.month.16sep2010.dta")
+fix(SAE.data)
+fix(SAE.data)
+?factor
+?write
+?write.table
+?data.frame
+dlogis(2)
+dlogis(5)
+dlogis(-1)
+plogis(-1)
+?dlogis
+qlogis(5)
+qlogis(.9)
+qlogis(.99)
+qlogis(.999999)
+glogis(.01)
+qlogis(.01)
+?qlogis
+qlogis(2)
+qlogis(.5)
+pp<-runif(100)
+lpp<-qlogis(pp)
+lpp
+pos.neg<-lpp>1
+pos.neg
+tr.lpp<-abs(lpp)^(1/3)
+#
+pp<-runif(100)#
+lpp<-qlogis(pp)#
+negative<-lpp<1#
+tr.lpp<-abs(lpp)^(1/3)#
+tr.lpp[negative]<-tr.lpp[negative]*-1
+hist(lpp)
+#
+pp<-runif(100)#
+lpp<-qlogis(pp)#
+negative<-lpp<1#
+tr.lpp<-abs(lpp)^(1/3)#
+tr.lpp[negative]<-tr.lpp[negative]*-1#
+par(mfrow=2,1)#
+plot(density(lpp))#
+plot(density(tr.lpp))
+#
+#
+pp<-runif(100)#
+lpp<-qlogis(pp)#
+negative<-lpp<1#
+tr.lpp<-abs(lpp)^(1/3)#
+tr.lpp[negative]<-tr.lpp[negative]*-1#
+par(mfrow=c(2,1)#
+plot(density(lpp))#
+plot(density(tr.lpp))
+pp<-runif(100)#
+lpp<-qlogis(pp)#
+negative<-lpp<1#
+tr.lpp<-abs(lpp)^(1/3)#
+tr.lpp[negative]<-tr.lpp[negative]*-1#
+par(mfrow=c(2,1))#
+plot(density(lpp))#
+plot(density(tr.lpp))
+#
+pp<-runif(100)#
+lpp<-qlogis(pp)#
+negative<-lpp<1#
+tr.lpp<-abs(lpp)^(1/3)#
+tr.lpp[negative]<-tr.lpp[negative]*-1#
+par(mfrow=c(2,1))#
+plot(density(lpp, bw=.001))#
+plot(density(tr.lpp, bw=.001))
+#
+plot(density(pp))#
+plot(density(pp^(1/3)))
+#
+plot(density(pp))#
+plot(density((pp*100)^(1/3)))
+pp*100
+(pp*100)^(1/3)
+pp<-runif(100)#
+lpp<-qlogis(pp)#
+negative<-lpp<1#
+tr.lpp<-abs(lpp)^(1/3)#
+tr.lpp[negative]<-tr.lpp[negative]*-1#
+par(mfrow=c(2,1))#
+plot(density(lpp, bw=.001))#
+plot(density(tr.lpp, bw=.001))
+pp<-runif(100)#
+lpp<-qlogis(pp)#
+negative<-lpp<0#
+tr.lpp<-abs(lpp)^(1/3)#
+tr.lpp[negative]<-tr.lpp[negative]*-1#
+par(mfrow=c(2,1))#
+plot(density(lpp, bw=.001))#
+plot(density(tr.lpp, bw=.001))
+pp<-runif(100)#
+lpp<-qlogis(pp)#
+negative<-lpp<0#
+tr.lpp<-(1+abs(lpp))^(1/3)#
+tr.lpp[negative]<-tr.lpp[negative]*-1#
+par(mfrow=c(2,1))#
+plot(density(lpp, bw=.001))#
+plot(density(tr.lpp, bw=.001))
+pp<-runif(100)#
+lpp<-qlogis(pp)#
+negative<-lpp<0#
+tr.lpp<-(1+abs(lpp))^(1/3)#
+tr.lpp<-tr.lpp-1#
+tr.lpp[negative]<-tr.lpp[negative]*-1#
+par(mfrow=c(2,1))#
+plot(density(lpp, bw=.001))#
+plot(density(tr.lpp, bw=.001))
+pp<-runif(100)#
+lpp<-qlogis(pp)#
+negative<-lpp<0#
+tr.lpp<-(1+abs(lpp))^(1/3)#
+tr.lpp<-tr.lpp-1#
+tr.lpp[negative]<-tr.lpp[negative]*-1#
+par(mfrow=c(2,1))#
+plot(density(lpp, bw=.01))#
+plot(density(tr.lpp, bw=.01))
+?qq
+qq(lpp~tr.lpp)
+indicator<-cbind(rep(1,100), rep(0,100))
+#
+indicator<-cbind(rep(1,100), rep(0,100))#
+my.dat<-cbind(lpp, tr.lpp)
+qq(indicator~my.dat)
+plot(lpp, tr.lpp)
+pp<-runif(100)#
+lpp<-qlogis(pp)#
+negative<-lpp<0#
+tr.lpp<-(1+abs(lpp))^(1/10)#
+tr.lpp<-tr.lpp-1#
+tr.lpp[negative]<-tr.lpp[negative]*-1#
+par(mfrow=c(3,1))#
+plot(density(lpp, bw=.1))#
+plot(density(tr.lpp, bw=.1))#
+plot(lpp, tr.lpp)
+pp<-runif(100)#
+lpp<-qlogis(pp)#
+negative<-lpp<0#
+tr.lpp<-(1+abs(lpp))^(1/2)#
+tr.lpp<-tr.lpp-1#
+tr.lpp[negative]<-tr.lpp[negative]*-1#
+par(mfrow=c(3,1))#
+plot(density(lpp, bw=.1))#
+plot(density(tr.lpp, bw=.1))#
+plot(lpp, tr.lpp)
+pp<-runif(100)#
+lpp<-qlogis(pp)#
+negative<-lpp<0#
+tr.lpp<-(1+abs(lpp))^(1/2)#
+tr.lpp<-tr.lpp-1#
+tr.lpp[negative]<-tr.lpp[negative]*-1#
+par(mfrow=c(3,1))#
+plot(density(lpp, bw=.1))#
+plot(density(tr.lpp, bw=.1))#
+plot(lpp, tr.lpp, xlim=c(-5,5), ylim=c(-5,5))
+pp<-runif(100)#
+lpp<-qlogis(pp)#
+negative<-lpp<0#
+tr.lpp<-(1+abs(lpp))^(1/10)#
+tr.lpp<-tr.lpp-1#
+tr.lpp[negative]<-tr.lpp[negative]*-1#
+par(mfrow=c(3,1))#
+plot(density(lpp, bw=.1))#
+plot(density(tr.lpp, bw=.1))#
+plot(lpp, tr.lpp, xlim=c(-5,5), ylim=c(-5,5))
+pp<-runif(100)#
+lpp<-qlogis(pp)#
+negative<-lpp<0#
+tr.lpp<-(1+abs(lpp))^(1/10)#
+tr.lpp<-tr.lpp-1#
+tr.lpp[negative]<-tr.lpp[negative]*-1#
+par(mfrow=c(3,1))#
+plot(density(lpp, bw=.1))#
+plot(density(tr.lpp, bw=.1))#
+plot(lpp, tr.lpp)
+#
+pp<-runif(100)#
+lpp<-qlogis(pp)#
+negative<-lpp<0#
+tr.lpp<-(1+abs(lpp))^(1/100)#
+tr.lpp<-tr.lpp-1#
+tr.lpp[negative]<-tr.lpp[negative]*-1#
+par(mfrow=c(3,1))#
+plot(density(lpp, bw=.1))#
+plot(density(tr.lpp, bw=.1))#
+plot(lpp, tr.lpp)
+pp<-runif(100)#
+lpp<-qlogis(pp)#
+negative<-lpp<0#
+tr.lpp<-(1+abs(lpp))^(5)#
+tr.lpp<-tr.lpp-1#
+tr.lpp[negative]<-tr.lpp[negative]*-1#
+par(mfrow=c(3,1))#
+plot(density(lpp, bw=.1))#
+plot(density(tr.lpp, bw=.1))#
+plot(lpp, tr.lpp)
+pp<-runif(100)#
+lpp<-qlogis(pp)#
+negative<-lpp<0#
+tr.lpp<-(1+abs(lpp))^(1/5)#
+tr.lpp<-tr.lpp-1#
+tr.lpp[negative]<-tr.lpp[negative]*-1#
+par(mfrow=c(3,1))#
+plot(density(lpp, bw=.1))#
+plot(density(tr.lpp, bw=.1))#
+plot(lpp, tr.lpp)

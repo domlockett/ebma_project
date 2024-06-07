@@ -1,0 +1,18 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Dynamic forecasting in political science}{}% 2
+\BOOKMARK [1][-]{section.3}{Ensemble Bayesian model averaging}{}% 3
+\BOOKMARK [2][-]{subsection.3.1}{Mathematical foundation}{section.3}% 4
+\BOOKMARK [2][-]{subsection.3.2}{EBMA for dynamic settings}{section.3}% 5
+\BOOKMARK [2][-]{subsection.3.3}{EBMA for normally distributed outcomes}{section.3}% 6
+\BOOKMARK [2][-]{subsection.3.4}{The dichotomous outcome model}{section.3}% 7
+\BOOKMARK [2][-]{subsection.3.5}{Parameter estimation by maximum likelihood and EM algorithm}{section.3}% 8
+\BOOKMARK [2][-]{subsection.3.6}{Ensemble prediction}{section.3}% 9
+\BOOKMARK [1][-]{section.4}{Empirical applications}{}% 10
+\BOOKMARK [2][-]{subsection.4.1}{Application to insurgency forecasting}{section.4}% 11
+\BOOKMARK [3][-]{section*.1}{Component models:}{subsection.4.1}% 12
+\BOOKMARK [3][-]{section*.2}{Results:}{subsection.4.1}% 13
+\BOOKMARK [2][-]{subsection.4.2}{Application to US presidential election forecasts}{section.4}% 14
+\BOOKMARK [3][-]{section*.3}{Component models:}{subsection.4.2}% 15
+\BOOKMARK [3][-]{section*.4}{Results:}{subsection.4.2}% 16
+\BOOKMARK [2][-]{subsection.4.3}{Application to the Supreme Court Forecasting Project}{section.4}% 17
+\BOOKMARK [1][-]{section.5}{Discussion}{}% 18

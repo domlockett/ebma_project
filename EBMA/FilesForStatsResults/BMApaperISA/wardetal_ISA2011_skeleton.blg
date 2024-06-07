@@ -1,0 +1,62 @@
+This is BibTeX, Version 0.99d (TeX Live 2010)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: wardetal_ISA2011_skeleton.aux
+The style file: apsr.bst
+Database file #1: Flo_Bib.bib
+Database file #2: /Users/jacobmontgomery/Dissertation/master3.bib
+Repeated entry---line 93 of file /Users/jacobmontgomery/Dissertation/master3.bib
+ : @article{Abramowitz:2008
+ :                         ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 3673 of file /Users/jacobmontgomery/Dissertation/master3.bib
+ : @article{Campbell:1992
+ :                       ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 11410 of file /Users/jacobmontgomery/Dissertation/master3.bib
+ : @article{Krause:1997
+ :                     ,
+I'm skipping whatever remains of this entry
+Warning--I didn't find a database entry for "Chocuri:Robinson:1978"
+Warning--there's a number but no volume in Hamill:2004
+You've used 55 entries,
+            2874 wiz_defined-function locations,
+            1022 strings with 13717 characters,
+and the built_in function-call counts, 222441 in all, are:
+= -- 36361
+> -- 2548
+< -- 1
++ -- 16938
+- -- 911
+* -- 18988
+:= -- 44724
+add.period$ -- 222
+call.type$ -- 55
+change.case$ -- 716
+chr.to.int$ -- 55
+cite$ -- 56
+duplicate$ -- 843
+empty$ -- 1949
+format.name$ -- 960
+if$ -- 40023
+int.to.chr$ -- 5
+int.to.str$ -- 0
+missing$ -- 57
+newline$ -- 229
+num.names$ -- 637
+pop$ -- 185
+preamble$ -- 1
+purify$ -- 825
+quote$ -- 0
+skip$ -- 725
+stack$ -- 0
+substring$ -- 51269
+swap$ -- 119
+text.length$ -- 771
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 212
+warning$ -- 1
+while$ -- 1297
+width$ -- 0
+write$ -- 758
+(There were 3 error messages)

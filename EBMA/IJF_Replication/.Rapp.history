@@ -1,0 +1,3408 @@
+install.packages("corpcor")
+install.packages("separationplot")
+install.packages("maptools")
+install.packages("pscl")
+install.packages("Hmisc")
+install.packages("copcor")
+library(wicews)
+demo(delivery.EOI1.hier, ask=FALSE)
+model.insurgency$model
+summary(model.insurgency)
+summary(model.insurgency$model)
+demo(delivery.EOI1.count, ask=FALSE)
+remove.packages("lme4")
+library(lme4)
+install.packages("rgdal")
+install.packages("sp")
+library(devtools); library(roxygen2); library(testthat)
+data(calibrationSample)#
+data(testSample)
+library(EBMAforecast)
+remove.packages(EBMAforecast)
+remove.packages("EBMAforecast")
+library(EBMAforecast)
+data(calibrationSample)#
+data(testSample)
+data(presidentialForecast)#
+tyn=15#
+a=1#
+train.years=14#
+#
+dates <- rep(NA, tyn)#
+   for (i in 1:tyn){#
+     dates[i] <- paste("2011", "01", 10+i, "01", sep="")#
+    }#
+#
+   pred.date <- dates[tyn]#
+full.forecasts<-presidentialForecast[,c(1:6)]#
+full.observed<-presidentialForecast[,7]#
+full.forecasts[1,6]<-NA#
+full.forecasts[3,2]<-NA#
+full.forecasts[2,2]<-NA#
+full.forecasts[7,2]<-NA#
+full.forecasts[6,1]<-NA#
+full.forecasts[14,2]<-NA#
+full.forecasts[7,6]<-NA#
+library(ensembleBMA)
+my.E.data <- ensembleData(forecasts=(full.forecasts)^(1/1), dates=dates, observations=full.observed,#
+                             initializationTime=1, forecastHour=1) #Make a dataset of the appropriate format for the ensembleBMA package#
+   fit.eBMA <- ensembleBMAnormal(my.E.data, trainingDays=train.years, dates=pred.date, minCRPS=FALSE,#
+                              control=controlBMAnormal(biasCorrection="none",tol=0.00000001))#
+my.data<-makeForecastData(.predCalibration=full.forecasts[c(1:14),],.outcomeCalibration=full.observed[c(1:14)],.predTest=full.forecasts[15,],.outcomeTest=full.observed[15], c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz"))#
+check13<-calibrateEnsemble(my.data, model="normal", maxIter=25000,useModelPara=FALSE,tol=0.00000001)
+check13
+check2<-as.numeric(round(as.matrix(check13@modelWeights),3))
+check2
+as.numeric(round(as.matrix(fit.eBMA$weights),3))
+.forecastData = my.data
+useModelParams = TRUE
+predType="posteriorMedian"
+const=0
+maxIter=1e6
+tol = sqrt(.Machine$double.eps)
+.predictCal <- function(x){#
+              .rawPred <- predict(x)#
+              .outPred <- rep(NA, nObsCal)#
+              .outPred[as.numeric(names(.rawPred))] <- .rawPred#
+              return(.outPred)#
+            }#
+            .modelFitter <- function(preds){#
+              thisModel <- lm(outcomeCalibration~preds)#
+              return(thisModel)#
+            }#
+            .predictTest <- function(x, i){#
+              .rawPred <- predict(.models[[i]], newdata=data.frame(preds=x))#
+              .outPred <- rep(NA, nObsTest)#
+              .outPred[as.numeric(names(.rawPred))] <- .rawPred#
+              return(.outPred)#
+            }#
+            ##Extract data#
+            predCalibration <- .forecastData@predCalibration; outcomeCalibration <- .forecastData@outcomeCalibration#
+            predTest <- .forecastData@predTest; outcomeTest <- .forecastData@outcomeTest#
+            .testPeriod <- length(predTest)>0            #
+            modelNames <- .forecastData@modelNames#
+            ## Set constants#
+            nMod <-  ncol(predCalibration); nDraws <- dim(predCalibration)[3]#
+            nObsCal <- nrow(predCalibration); nObsTest <- nrow(predTest)#
+            ZERO<-1e-4#
+            ## Fit Models#
+            if(useModelParams==TRUE){.models <- alply(predCalibration, 2:3, .fun=.modelFitter)}#
+#
+            ## Extract needed info#
+            if(nDraws==1 & useModelParams==TRUE){#
+              predCalibrationAdj <- aperm(array(laply(.models, .predictCal), dim=c(nMod, nObsCal, nDraws)), c(2,1,3))#
+              modelParams <- aperm(array(laply(.models, coefficients), dim=c(nMod, 2, nDraws)), c(2,1,3))#
+            }#
+            if(nDraws>1 & useModelParams==TRUE){ # This code is in development for exchangeability#
+              predCalibrationAdj <- aperm(aaply(.models, 1:2, .predictCal), c(3,1,2))#
+              modelParams <- aperm(aaply(.models, 1:2, coefficients), c(3,1,2))#
+            }#
+            if(useModelParams==FALSE){#
+              predCalibrationAdj <- predCalibration#
+              modelParams <- array(c(0,1), dim=c(2,nMod,nDraws))#
+            }#
+            calResiduals <- outcomeCalibration-predCalibrationAdj#
+            calResiduals2 <- calResiduals^2#
+            dimnames(modelParams) <- list(c("Constant", "Predictor"), modelNames, 1:nDraws)#
+            dimnames(calResiduals) <- dimnames(calResiduals2) <-dimnames(predCalibrationAdj) <- list(1:nObsCal, modelNames, 1:nDraws)#
+#
+            ## Set initial values for parameters#
+            W <- rep(1/(nMod), nMod) ; names(W) <- modelNames#
+            sigma2<-1
+W
+predCalibration
+predCalibrationAdj[,,1]
+ncol
+nMod
+matrix(predCalibrationAdj[,,1],ncol=nMod)
+matrix(calResiduals2[,,1],ncol=nMod)
+W,
+W
+maxIter
+maxIter=1
+out  = emNorm(outcomeCalibration, matrix(predCalibrationAdj[,,1],ncol=nMod),matrix(calResiduals2[,,1],ncol=nMod), W, tol, maxIter, const, sigma2)#
+            if (out$Iterations==maxIter){print("WARNING: Maximum iterations reached")}#
+            W <- out$W*rowSums(!colSums(predCalibration, na.rm=T)==0); names(W) <- modelNames#
+            sigma2 = out$Sigma2#
+            LL = out$LL
+W
+##Extract data#
+            predCalibration <- .forecastData@predCalibration; outcomeCalibration <- .forecastData@outcomeCalibration#
+            predTest <- .forecastData@predTest; outcomeTest <- .forecastData@outcomeTest#
+            .testPeriod <- length(predTest)>0            #
+            modelNames <- .forecastData@modelNames#
+            ## Set constants#
+            nMod <-  ncol(predCalibration); nDraws <- dim(predCalibration)[3]#
+            nObsCal <- nrow(predCalibration); nObsTest <- nrow(predTest)#
+            ZERO<-1e-4#
+            ## Fit Models#
+            if(useModelParams==TRUE){.models <- alply(predCalibration, 2:3, .fun=.modelFitter)}#
+#
+            ## Extract needed info#
+            if(nDraws==1 & useModelParams==TRUE){#
+              predCalibrationAdj <- aperm(array(laply(.models, .predictCal), dim=c(nMod, nObsCal, nDraws)), c(2,1,3))#
+              modelParams <- aperm(array(laply(.models, coefficients), dim=c(nMod, 2, nDraws)), c(2,1,3))#
+            }#
+            if(nDraws>1 & useModelParams==TRUE){ # This code is in development for exchangeability#
+              predCalibrationAdj <- aperm(aaply(.models, 1:2, .predictCal), c(3,1,2))#
+              modelParams <- aperm(aaply(.models, 1:2, coefficients), c(3,1,2))#
+            }#
+            if(useModelParams==FALSE){#
+              predCalibrationAdj <- predCalibration#
+              modelParams <- array(c(0,1), dim=c(2,nMod,nDraws))#
+            }#
+            calResiduals <- outcomeCalibration-predCalibrationAdj#
+            calResiduals2 <- calResiduals^2#
+            dimnames(modelParams) <- list(c("Constant", "Predictor"), modelNames, 1:nDraws)#
+            dimnames(calResiduals) <- dimnames(calResiduals2) <-dimnames(predCalibrationAdj) <- list(1:nObsCal, modelNames, 1:nDraws)#
+#
+            ## Set initial values for parameters#
+            W <- rep(1/(nMod), nMod) ; names(W) <- modelNames#
+            sigma2<-1#
+#
+            ## Run EM#
+            .done <- FALSE#
+            .iter <- 0#
+            .emOld<-0
+outcomeCalibration=outcomeCalibration
+prediction=predCalibrationAdj
+W=W
+sigma2=sigma2
+RSQ=calResiduals2
+g<- aperm(array(aaply(.data=1:nMod,.margins=1,#
+                           .fun=function(i,y, mu, sd){#
+                             dnorm(y,mean=mu[,i,], sd=sd)#
+                           },#
+                           y=outcomeCalibration,mu=prediction, sd=sqrt(sigma2))#
+                          , dim=c(nMod, nObsCal, nDraws)), c(2,1,3))#
+                z.numerator<- aaply(.data=g, .margins=1, .fun=function(x){x*W})#
+                z.denom <- aaply(z.numerator, 1, sum, na.rm=T)
+z.denom
+library(EBMAforecast)
+data(calibrationSample)#
+data(testSample)#
+	context("Test if predictions between 0 and 1")#
+test_that("error for predcalibration greater 1",{#
+##test 1 for error predcalibration not between 0 and 1#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+setPredCalibration(this.ForecastData)<-matrix(1.001,ncol=3,nrow=696) #
+expect_that(as(this.ForecastData,"ForecastDataLogit"), throws_error())#
+})#
+#
+test_that("error for predcalibration smaller 0",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+setPredCalibration(this.ForecastData)<-matrix(-0.001,ncol=3,nrow=696) #
+expect_that(as(this.ForecastData,"ForecastDataLogit"), throws_error())#
+})#
+#
+test_that("error if predtest greater 1",{#
+##test 2 for error if predtest not between 0 and 1#
+#reset forecastdata#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+setPredTest(this.ForecastData)<-matrix(1.001,ncol=3,nrow=348) #
+expect_that(as(this.ForecastData,"ForecastDataLogit"), throws_error())#
+})#
+##
+test_that("error if predtest smaller 0",{#
+##test 2 for error if predtest not between 0 and 1#
+#reset forecastdata#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+setPredTest(this.ForecastData)<-matrix(-0.001,ncol=3,nrow=348) #
+expect_that(as(this.ForecastData,"ForecastDataLogit"), throws_error())#
+})#
+context("Outcome set with values either 0 or 1 test")#
+##test 3 for error if outcomeCalibration not 0 or 1#
+#reset forecastdata#
+test_that("error if outcomeCalibration greater 1",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+setOutcomeCalibration(this.ForecastData)<-c(rep(1,600),rep(1.5,96)) #
+expect_that(as(this.ForecastData,"ForecastDataLogit"), throws_error())#
+})#
+#
+test_that("error if outcomeCalibration is 0.5",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+setOutcomeCalibration(this.ForecastData)<-c(rep(1,600),rep(0.5,96)) #
+expect_that(as(this.ForecastData,"ForecastDataLogit"), throws_error())#
+})#
+test_that("error if outcomeCalibration smaller 0",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+setOutcomeCalibration(this.ForecastData)<-c(rep(1,600),rep(-0.00015,96)) #
+expect_that(as(this.ForecastData,"ForecastDataLogit"), throws_error())#
+})#
+##test 4 for error if outcomeTest not 0 or 1#
+#reset forecastdata#
+test_that("error if outcomeTest is larger 1",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+setOutcomeTest(this.ForecastData)<-c(rep(1,300),rep(1.5,48)) #
+expect_that(as(this.ForecastData,"ForecastDataLogit"), throws_error())#
+})#
+#
+test_that("error if outcomeTest is 0.5",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+setOutcomeTest(this.ForecastData)<-c(rep(1,300),rep(0.5,48)) #
+expect_that(as(this.ForecastData,"ForecastDataLogit"), throws_error())#
+})#
+##
+#
+test_that("error if outcomeTest smaller 0",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+setOutcomeTest(this.ForecastData)<-c(rep(1,300),rep(-0.00015,48)) #
+expect_that(as(this.ForecastData,"ForecastDataLogit"), throws_error())#
+})#
+#
+context("Vector size test")#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+#
+###test 5 for error if length of vectors not the same#
+test_that("error if length of vectors are not the same",{#
+expect_that(setPredCalibration(this.ForecastData)<-c(rep(1,240)), throws_error()) ### too short#
+expect_that(setPredTest(this.ForecastData)<-c(rep(1,240)), throws_error()) ### too short#
+expect_that(setOutcomeCalibration(this.ForecastData)<-c(rep(1,240)), throws_error())### too short#
+#expect_that(setOutcomeTest(this.ForecastData)<-c(rep(1,240)), throws_error())### too short#
+expect_that(setPredCalibration(this.ForecastData)<-c(rep(1,940)), throws_error()) ### too long#
+expect_that(setPredTest(this.ForecastData)<-c(rep(1,940)), throws_error()) ### too long#
+expect_that(setOutcomeCalibration(this.ForecastData)<-c(rep(1,940)), throws_error())### too long#
+#expect_that(setOutcomeTest(this.ForecastData)<-c(rep(1,900)), throws_error())### too long#
+})#
+#
+#### test 6 for error if columns in predCalibration and predTest differ#
+test_that("error if number of columns in predCalibration and predTest differ",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+#
+expect_that(setPredCalibration(this.ForecastData)<-matrix(1,ncol=4,nrow=696), throws_error())#
+expect_that(setPredCalibration(this.ForecastData)<-matrix(1,ncol=2,nrow=696), throws_error())#
+expect_that(setPredTest(this.ForecastData)<-matrix(1,ncol=4,nrow=348), throws_error())#
+expect_that(setPredTest(this.ForecastData)<-matrix(1,ncol=2,nrow=348), throws_error())#
+})#
+#
+### test 7  check that results for calibration set and test set are the same as in paper after ensemble#
+context("Results Check for logit")#
+test_that("results are the same as presented in paper (calibration period)",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"], .modelNames=c("LMER", "SAE", "GLM"))#
+check1<-calibrateEnsemble(this.ForecastData, model="logit", maxIter=25000, exp=3)#
+test_mat<-round(check1@modelWeights,2)#
+check_against<-(c(0.85,0.15,0.00))#
+expect_that(test_mat[[1]], equals(check_against[1]))#
+expect_that(test_mat[[2]], equals(check_against[2]))#
+expect_that(test_mat[[3]], equals(check_against[3]))#
+})#
+# # context("get tests")#
+# this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+# test_that("getPredCalibration gives PredCalibration",{#
+	# expect_that(getPredCalibration(this.ForecastData),equals(this.ForecastData@predCalibration))#
+# })#
+# test_that("getOutcomeCalibration gives OutcomeCalibration",{#
+	# expect_that(getOutcomeCalibration(this.ForecastData),equals(this.ForecastData@outcomeCalibration))#
+# })#
+#
+# test_that("getPredTest gives predTest",{#
+	# expect_that(getPredTest(this.ForecastData),equals(this.ForecastData@predTest))#
+# })#
+#
+# test_that("getOutcomeTest gives OutcomeTest",{#
+	# expect_that(getOutcomeTest(this.ForecastData),equals(this.ForecastData@outcomeTest))#
+# })#
+#
+# test_that("getModelNames gives ModelNames",{#
+	# expect_that(getModelNames(this.ForecastData),equals(this.ForecastData@modelNames))#
+# })#
+context("set tests")#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+test_that("setPredCalibration works",{#
+	setPredCalibration(this.ForecastData)<-matrix(1,ncol=3,nrow=696) #
+	expect_that(this.ForecastData@predCalibration, equals(array(1,dim=c(696,3,1))))#
+})#
+#
+test_that("setOutcomeCalibration works",{#
+	setOutcomeCalibration(this.ForecastData)<-rep(1,696) #
+	expect_that(this.ForecastData@outcomeCalibration, equals(rep(1,696)))#
+})#
+#
+test_that("setPredTest works",{#
+	setPredTest(this.ForecastData)<-matrix(1,ncol=3,nrow=348) #
+	expect_that(this.ForecastData@predTest,  equals(array(1,dim=c(348,3,1))))#
+})#
+#
+test_that("setOutcomeTest works",{#
+	setOutcomeTest(this.ForecastData)<-rep(1,348) #
+	expect_that(this.ForecastData@outcomeTest, equals(rep(1,348)))#
+})#
+#
+test_that("setModelNames works",{#
+	names<-c("Frank","Aaron","David")#
+	setModelNames(this.ForecastData)<-names#
+	expect_that(this.ForecastData@modelNames, equals(names))#
+})#
+#context("NA test")#
+##### test 8 check that NA's are not taken#
+#test_that("error if NA's are fed into ForecastData (predCalibration)",{#
+#expect_that(setPredCalibration(this.ForecastData)<-matrix(NA,ncol=3,nrow=696), throws_error())#
+#})#
+test_that("error if NA's are fed into ForecastData (outcomeCalibration)",{#
+expect_that(setOutcomeCalibration(this.ForecastData)<-c(rep(NA,696)), throws_error())#
+})#
+#
+#test_that("error if NA's are fed into ForecastData (predTest)",{#
+#expect_that(setPredTest(this.ForecastData)<-matrix(NA,ncol=3,nrow=348), throws_error())#
+#})#
+#
+test_that("error if NA's are fed into ForecastData (outcomeTest)",{#
+expect_that(setOutcomeTest(this.ForecastData)<-c(rep(NA,348)), throws_error())#
+})
+library(testthat)
+data(calibrationSample)#
+data(testSample)#
+	context("Test if predictions between 0 and 1")#
+test_that("error for predcalibration greater 1",{#
+##test 1 for error predcalibration not between 0 and 1#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+setPredCalibration(this.ForecastData)<-matrix(1.001,ncol=3,nrow=696) #
+expect_that(as(this.ForecastData,"ForecastDataLogit"), throws_error())#
+})#
+#
+test_that("error for predcalibration smaller 0",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+setPredCalibration(this.ForecastData)<-matrix(-0.001,ncol=3,nrow=696) #
+expect_that(as(this.ForecastData,"ForecastDataLogit"), throws_error())#
+})#
+#
+test_that("error if predtest greater 1",{#
+##test 2 for error if predtest not between 0 and 1#
+#reset forecastdata#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+setPredTest(this.ForecastData)<-matrix(1.001,ncol=3,nrow=348) #
+expect_that(as(this.ForecastData,"ForecastDataLogit"), throws_error())#
+})#
+##
+test_that("error if predtest smaller 0",{#
+##test 2 for error if predtest not between 0 and 1#
+#reset forecastdata#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+setPredTest(this.ForecastData)<-matrix(-0.001,ncol=3,nrow=348) #
+expect_that(as(this.ForecastData,"ForecastDataLogit"), throws_error())#
+})#
+context("Outcome set with values either 0 or 1 test")#
+##test 3 for error if outcomeCalibration not 0 or 1#
+#reset forecastdata#
+test_that("error if outcomeCalibration greater 1",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+setOutcomeCalibration(this.ForecastData)<-c(rep(1,600),rep(1.5,96)) #
+expect_that(as(this.ForecastData,"ForecastDataLogit"), throws_error())#
+})#
+#
+test_that("error if outcomeCalibration is 0.5",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+setOutcomeCalibration(this.ForecastData)<-c(rep(1,600),rep(0.5,96)) #
+expect_that(as(this.ForecastData,"ForecastDataLogit"), throws_error())#
+})#
+test_that("error if outcomeCalibration smaller 0",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+setOutcomeCalibration(this.ForecastData)<-c(rep(1,600),rep(-0.00015,96)) #
+expect_that(as(this.ForecastData,"ForecastDataLogit"), throws_error())#
+})#
+##test 4 for error if outcomeTest not 0 or 1#
+#reset forecastdata#
+test_that("error if outcomeTest is larger 1",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+setOutcomeTest(this.ForecastData)<-c(rep(1,300),rep(1.5,48)) #
+expect_that(as(this.ForecastData,"ForecastDataLogit"), throws_error())#
+})#
+#
+test_that("error if outcomeTest is 0.5",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+setOutcomeTest(this.ForecastData)<-c(rep(1,300),rep(0.5,48)) #
+expect_that(as(this.ForecastData,"ForecastDataLogit"), throws_error())#
+})#
+##
+#
+test_that("error if outcomeTest smaller 0",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+setOutcomeTest(this.ForecastData)<-c(rep(1,300),rep(-0.00015,48)) #
+expect_that(as(this.ForecastData,"ForecastDataLogit"), throws_error())#
+})#
+#
+context("Vector size test")#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+#
+###test 5 for error if length of vectors not the same#
+test_that("error if length of vectors are not the same",{#
+expect_that(setPredCalibration(this.ForecastData)<-c(rep(1,240)), throws_error()) ### too short#
+expect_that(setPredTest(this.ForecastData)<-c(rep(1,240)), throws_error()) ### too short#
+expect_that(setOutcomeCalibration(this.ForecastData)<-c(rep(1,240)), throws_error())### too short#
+#expect_that(setOutcomeTest(this.ForecastData)<-c(rep(1,240)), throws_error())### too short#
+expect_that(setPredCalibration(this.ForecastData)<-c(rep(1,940)), throws_error()) ### too long#
+expect_that(setPredTest(this.ForecastData)<-c(rep(1,940)), throws_error()) ### too long#
+expect_that(setOutcomeCalibration(this.ForecastData)<-c(rep(1,940)), throws_error())### too long#
+#expect_that(setOutcomeTest(this.ForecastData)<-c(rep(1,900)), throws_error())### too long#
+})#
+#
+#### test 6 for error if columns in predCalibration and predTest differ#
+test_that("error if number of columns in predCalibration and predTest differ",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+#
+expect_that(setPredCalibration(this.ForecastData)<-matrix(1,ncol=4,nrow=696), throws_error())#
+expect_that(setPredCalibration(this.ForecastData)<-matrix(1,ncol=2,nrow=696), throws_error())#
+expect_that(setPredTest(this.ForecastData)<-matrix(1,ncol=4,nrow=348), throws_error())#
+expect_that(setPredTest(this.ForecastData)<-matrix(1,ncol=2,nrow=348), throws_error())#
+})#
+#
+### test 7  check that results for calibration set and test set are the same as in paper after ensemble#
+context("Results Check for logit")#
+test_that("results are the same as presented in paper (calibration period)",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"], .modelNames=c("LMER", "SAE", "GLM"))#
+check1<-calibrateEnsemble(this.ForecastData, model="logit", maxIter=25000, exp=3)#
+test_mat<-round(check1@modelWeights,2)#
+check_against<-(c(0.85,0.15,0.00))#
+expect_that(test_mat[[1]], equals(check_against[1]))#
+expect_that(test_mat[[2]], equals(check_against[2]))#
+expect_that(test_mat[[3]], equals(check_against[3]))#
+})#
+# # context("get tests")#
+# this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+# test_that("getPredCalibration gives PredCalibration",{#
+	# expect_that(getPredCalibration(this.ForecastData),equals(this.ForecastData@predCalibration))#
+# })#
+# test_that("getOutcomeCalibration gives OutcomeCalibration",{#
+	# expect_that(getOutcomeCalibration(this.ForecastData),equals(this.ForecastData@outcomeCalibration))#
+# })#
+#
+# test_that("getPredTest gives predTest",{#
+	# expect_that(getPredTest(this.ForecastData),equals(this.ForecastData@predTest))#
+# })#
+#
+# test_that("getOutcomeTest gives OutcomeTest",{#
+	# expect_that(getOutcomeTest(this.ForecastData),equals(this.ForecastData@outcomeTest))#
+# })#
+#
+# test_that("getModelNames gives ModelNames",{#
+	# expect_that(getModelNames(this.ForecastData),equals(this.ForecastData@modelNames))#
+# })#
+context("set tests")#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"],.modelNames=c("LMER", "SAE", "GLM"))#
+test_that("setPredCalibration works",{#
+	setPredCalibration(this.ForecastData)<-matrix(1,ncol=3,nrow=696) #
+	expect_that(this.ForecastData@predCalibration, equals(array(1,dim=c(696,3,1))))#
+})#
+#
+test_that("setOutcomeCalibration works",{#
+	setOutcomeCalibration(this.ForecastData)<-rep(1,696) #
+	expect_that(this.ForecastData@outcomeCalibration, equals(rep(1,696)))#
+})#
+#
+test_that("setPredTest works",{#
+	setPredTest(this.ForecastData)<-matrix(1,ncol=3,nrow=348) #
+	expect_that(this.ForecastData@predTest,  equals(array(1,dim=c(348,3,1))))#
+})#
+#
+test_that("setOutcomeTest works",{#
+	setOutcomeTest(this.ForecastData)<-rep(1,348) #
+	expect_that(this.ForecastData@outcomeTest, equals(rep(1,348)))#
+})#
+#
+test_that("setModelNames works",{#
+	names<-c("Frank","Aaron","David")#
+	setModelNames(this.ForecastData)<-names#
+	expect_that(this.ForecastData@modelNames, equals(names))#
+})#
+#context("NA test")#
+##### test 8 check that NA's are not taken#
+#test_that("error if NA's are fed into ForecastData (predCalibration)",{#
+#expect_that(setPredCalibration(this.ForecastData)<-matrix(NA,ncol=3,nrow=696), throws_error())#
+#})#
+test_that("error if NA's are fed into ForecastData (outcomeCalibration)",{#
+expect_that(setOutcomeCalibration(this.ForecastData)<-c(rep(NA,696)), throws_error())#
+})#
+#
+#test_that("error if NA's are fed into ForecastData (predTest)",{#
+#expect_that(setPredTest(this.ForecastData)<-matrix(NA,ncol=3,nrow=348), throws_error())#
+#})#
+#
+test_that("error if NA's are fed into ForecastData (outcomeTest)",{#
+expect_that(setOutcomeTest(this.ForecastData)<-c(rep(NA,348)), throws_error())#
+})
+context("test that makeForecastData takes arrays,matrix,and data.frame objects")#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"], .modelNames=c("LMER", "SAE", "GLM"))#
+test_that("makeForecastData takes DF",{#
+calibrationSample.df<-as.data.frame(calibrationSample)#
+testSample.df<-as.data.frame(testSample)#
+this.ForecastData.df <- makeForecastData(.predCalibration=calibrationSample.df[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample.df[,"Insurgency"],.predTest=testSample.df[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample.df[,"Insurgency"], .modelNames=c("LMER", "SAE", "GLM"))#
+expect_that(this.ForecastData,equals(this.ForecastData.df))#
+})#
+#
+test_that("makeForecastData takes matrix",{#
+calibrationSample.m<-as.matrix(calibrationSample)#
+testSample.m<-as.matrix(testSample)#
+this.ForecastData.m <- makeForecastData(.predCalibration=calibrationSample.m[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample.m[,"Insurgency"],.predTest=testSample.m[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample.m[,"Insurgency"], .modelNames=c("LMER", "SAE", "GLM"))#
+expect_that(this.ForecastData,equals(this.ForecastData.m))#
+})#
+#
+test_that("makeForecastData takes array",{#
+calibrationSample.a<-as.array(calibrationSample)#
+testSample.a<-as.array(testSample)#
+this.ForecastData.a <- makeForecastData(.predCalibration=calibrationSample.a[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample.a[,"Insurgency"],.predTest=testSample.a[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample.a[,"Insurgency"], .modelNames=c("LMER", "SAE", "GLM"))#
+expect_that(this.ForecastData,equals(this.ForecastData.a))#
+})#
+context("test for functionality of options in logit EBMA (logit)")#
+test_that("tolerance changes if option is used (logit)",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"], .modelNames=c("LMER", "SAE", "GLM"))#
+check1<-calibrateEnsemble(this.ForecastData, model="logit", tol=0.00141, maxIter=25000, exp=3)		#
+expect_that(check1@tol,equals(0.00141))	#
+})#
+#
+test_that("maximum iteration changes if option is used (logit)",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"], .modelNames=c("LMER", "SAE", "GLM"))#
+check1<-calibrateEnsemble(this.ForecastData, model="logit", tol=0.0000000001, maxIter=15, exp=3)		#
+expect_that(check1@maxIter,equals(15))#
+})
+test_that("exponent changes if option is used (logit)",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"], .modelNames=c("LMER", "SAE", "GLM"))#
+check1<-calibrateEnsemble(this.ForecastData, model="logit", tol=0.0001, maxIter=25000, exp=15)		#
+expect_that(check1@exp,equals(15))#
+})#
+#
+test_that("model parameters are turned of, all parameters are 0,1 (logit)",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"], .modelNames=c("LMER", "SAE", "GLM"))#
+check1<-calibrateEnsemble(this.ForecastData, model="logit", tol=0.001, maxIter=25000, useModelParams=FALSE)#
+parameters<-matrix(c(0,1,0,1,0,1),ncol=3)		#
+for(i in 1:2){#
+	for(j in 1:3){#
+		expect_that(matrix(check1@modelParams,ncol=3)[i,j], equals(parameters[i,j]))#
+			}#
+}#
+})#
+context("test for functionality of options in logit EBMA by checking if results are different")#
+test_that("tolerance changes if option is used (logit - results)",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"], .modelNames=c("LMER", "SAE", "GLM"))#
+check1<-calibrateEnsemble(this.ForecastData, model="logit", tol=0.000141, maxIter=25000, exp=3)#
+check2<-calibrateEnsemble(this.ForecastData, model="logit", tol=0.1, maxIter=25000, exp=3)#
+expect_false((check1@modelWeights==check2@modelWeights)[[1]])	#
+})#
+#
+test_that("maximum iteration changes if option is used (logit - results)",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"], .modelNames=c("LMER", "SAE", "GLM"))#
+check1<-calibrateEnsemble(this.ForecastData, model="logit", tol=0.001, maxIter=3, exp=3)#
+check2<-calibrateEnsemble(this.ForecastData, model="logit", tol=0.001, maxIter=25000, exp=3)#
+expect_false((check1@modelWeights==check2@modelWeights)[[1]])	#
+})#
+#
+test_that("exponent changes if option is used (logit - results)",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"], .modelNames=c("LMER", "SAE", "GLM"))#
+check1<-calibrateEnsemble(this.ForecastData, model="logit", tol=0.001, maxIter=25000, exp=1)#
+check2<-calibrateEnsemble(this.ForecastData, model="logit", tol=0.001, maxIter=25000, exp=25)		#
+expect_false((check1@modelWeights==check2@modelWeights)[[1]])	#
+})#
+#
+test_that("model parameters are turned of, all parameters are 0,1 (logit - results)",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"], .modelNames=c("LMER", "SAE", "GLM"))#
+check1<-calibrateEnsemble(this.ForecastData, model="logit", tol=0.001, maxIter=25000, useModelParams=TRUE)#
+check2<-calibrateEnsemble(this.ForecastData, model="logit", tol=0.001, maxIter=25000, useModelParams=FALSE)#
+expect_false((check1@modelWeights==check2@modelWeights)[[1]])	#
+})
+test_that("model option = normal changes results (logit - results)",{#
+this.ForecastData <- makeForecastData(.predCalibration=calibrationSample[,c("LMER", "SAE", "GLM")],.outcomeCalibration=calibrationSample[,"Insurgency"],.predTest=testSample[,c("LMER", "SAE", "GLM")],.outcomeTest=testSample[,"Insurgency"], .modelNames=c("LMER", "SAE", "GLM"))#
+check1<-calibrateEnsemble(this.ForecastData, model="logit", tol=0.01, maxIter=25000, exp=3,useModelPara=FALSE)#
+check2<-calibrateEnsemble(this.ForecastData, model="normal", tol=0.01, maxIter=25000, exp=3,useModelPara=FALSE)#
+expect_false((check1@modelWeights==check2@modelWeights)[[1]])#
+})#
+context("test for functionality of options in normal EBMA")#
+#create data frame#
+set.seed(123)#
+predictions<-matrix(NA, nrow=400, ncol=4)#
+predictions[,1]<-rnorm(400,mean=2.6,sd=5)#
+predictions[,2]<-rnorm(400,mean=6,sd=10)#
+predictions[,3]<-rnorm(400,mean=0.4,sd=8)#
+predictions[,4]<-rnorm(400,mean=-2,sd=15)#
+true<-rep(NA,400)#
+true<-rnorm(400,mean=2.2,sd=2)#
+#
+test.pred<-matrix(NA, nrow=40, ncol=4)#
+test.pred[,1]<-rnorm(40,mean=2.3,sd=7)#
+test.pred[,2]<-rnorm(40,mean=3.3,sd=12)#
+test.pred[,3]<-rnorm(40,mean=1.3,sd=11)#
+test.pred[,4]<-rnorm(40,mean=2.2,sd=18)#
+test.true<-rnorm(40,mean=2.2,sd=2)#
+test_that("tolerance changes if option is used (normal)",{#
+this.ForecastData <- makeForecastData(.predCalibration=predictions,.outcomeCalibration=true,.predTest=test.pred,.outcomeTest=test.true, .modelNames=c("m1", "m2", "m3","m4"))#
+check1<-calibrateEnsemble(this.ForecastData, model="normal", tol=0.000141, maxIter=25000, exp=3)#
+expect_that(check1@tol,equals(0.000141))	#
+})#
+#
+test_that("maximum iteration changes if option is used (normal)",{#
+this.ForecastData <-makeForecastData(.predCalibration=predictions,.outcomeCalibration=true,.predTest=test.pred,.outcomeTest=test.true, .modelNames=c("m1", "m2", "m3","m4"))#
+check111<-calibrateEnsemble(this.ForecastData, model="normal", tol=0.0000000001, maxIter=25, exp=3)		#
+expect_that(check111@maxIter,equals(25))#
+})#
+#
+test_that("exponent changes if option is used (normal)",{#
+this.ForecastData <- makeForecastData(.predCalibration=predictions,.outcomeCalibration=true,.predTest=test.pred,.outcomeTest=test.true, .modelNames=c("m1", "m2", "m3","m4"))	#
+check1<-calibrateEnsemble(this.ForecastData, model="normal", tol=0.0001, maxIter=25000, exp=15)		#
+expect_that(check1@exp,equals(15))#
+})#
+#
+test_that("model parameters are turned of, all parameters are 0,1 (normal)",{#
+this.ForecastData <- makeForecastData(.predCalibration=predictions,.outcomeCalibration=true,.predTest=test.pred,.outcomeTest=test.true, .modelNames=c("m1", "m2", "m3","m4"))#
+check1<-calibrateEnsemble(this.ForecastData, model="normal", tol=0.0001, maxIter=25000, useModelParams=FALSE)#
+parameters<-matrix(c(0,1,0,1,0,1,0,1),ncol=4)	#
+for(i in 1:2){#
+	for(j in 1:4){#
+		expect_that(matrix(check1@modelParams,ncol=4)[i,j], equals(parameters[i,j]))#
+			}#
+}#
+})
+### same test check if results change#
+#
+context("test for functionality of options in normal EBMA, look for different results (normal - results)")#
+#create data frame#
+set.seed(123)#
+predictions<-matrix(NA, nrow=400, ncol=4)#
+predictions[,1]<-rnorm(400,mean=2.6,sd=5)#
+predictions[,2]<-rnorm(400,mean=6,sd=10)#
+predictions[,3]<-rnorm(400,mean=0.4,sd=8)#
+predictions[,4]<-rnorm(400,mean=-2,sd=15)#
+true<-rep(NA,400)#
+true<-rnorm(400,mean=2.2,sd=2)#
+#
+test.pred<-matrix(NA, nrow=40, ncol=4)#
+test.pred[,1]<-rnorm(40,mean=2.3,sd=7)#
+test.pred[,2]<-rnorm(40,mean=3.3,sd=12)#
+test.pred[,3]<-rnorm(40,mean=1.3,sd=11)#
+test.pred[,4]<-rnorm(40,mean=2.2,sd=18)#
+test.true<-rnorm(40,mean=2.2,sd=2)#
+#
+test_that("tolerance changes if option is used (normal - results)",{#
+this.ForecastData <- makeForecastData(.predCalibration=predictions,.outcomeCalibration=true,.predTest=test.pred,.outcomeTest=test.true, .modelNames=c("m1", "m2", "m3","m4"))#
+check1<-calibrateEnsemble(this.ForecastData, model="normal", tol=0.000141, maxIter=25000, exp=3)#
+check2<-calibrateEnsemble(this.ForecastData, model="normal", tol=1, maxIter=25000, exp=3)#
+expect_false((check1@modelWeights==check2@modelWeights)[[1]])	#
+})#
+#
+test_that("maximum iteration changes if option is used (normal - results)",{#
+this.ForecastData <- makeForecastData(.predCalibration=predictions,.outcomeCalibration=true,.predTest=test.pred,.outcomeTest=test.true, .modelNames=c("m1", "m2", "m3","m4"))	#
+check1<-calibrateEnsemble(this.ForecastData, model="normal", tol=0.01, maxIter=1, exp=3)#
+check2<-calibrateEnsemble(this.ForecastData, model="normal", tol=0.01, maxIter=25000, exp=3)#
+expect_false((check1@modelWeights==check2@modelWeights)[[1]])	#
+#
+})
+#test_that("exponent changes if option is used (normal - results)",{#
+#	this.ForecastData <- #makeForecastData(.predCalibration=predictions,.outcomeCalibration=true,.predTest=test.pred,.outcomeTest=test.true, .modelNames=c("m#1", "m2", "m3","m4"))#
+#check1<-calibrateEnsemble(this.ForecastData, model="normal", tol=0.000001, maxIter=25000, exp=1)#
+#check2<-calibrateEnsemble(this.ForecastData, model="normal", tol=0.000001, maxIter=25000, exp=70)#
+#expect_false((check1@modelWeights==check2@modelWeights)[[1]])#
+#})#
+#
+test_that("model parameters are turned of, all parameters are 0,1 (normal - results)",{#
+	this.ForecastData <- makeForecastData(.predCalibration=predictions,.outcomeCalibration=true,.predTest=test.pred,.outcomeTest=test.true, .modelNames=c("m1", "m2", "m3","m4"))#
+check1<-calibrateEnsemble(this.ForecastData, model="normal", tol=0.00001, maxIter=25000, exp=3,useModelPara=FALSE)#
+check2<-calibrateEnsemble(this.ForecastData, model="normal", tol=0.00001, maxIter=25000, exp=3,useModelPara=TRUE)#
+expect_false((check1@modelWeights==check2@modelWeights)[[1]])#
+})#
+test_that("predType changes prediction (normal - results)",{#
+	this.ForecastData <- makeForecastData(.predCalibration=predictions,.outcomeCalibration=true,.predTest=test.pred,.outcomeTest=test.true, .modelNames=c("m1", "m2", "m3","m4"))#
+check1<-calibrateEnsemble(this.ForecastData, model="normal", tol=0.00001, maxIter=25000, exp=3,useModelPara=FALSE,predType="posteriorMedian")#
+check2<-calibrateEnsemble(this.ForecastData, model="normal", tol=0.00001, maxIter=25000, exp=3,useModelPara=FALSE,predType="posteriorMean")#
+expect_true((check1@modelWeights==check2@modelWeights)[[1]])#
+expect_false((check1@predTest[,1,1]==check2@predTest[,1,1])[[1]])#
+})#
+#
+test_that("model option = logit changes results (normal - results)",{#
+		this.ForecastData <- makeForecastData(.predCalibration=predictions,.outcomeCalibration=true,.predTest=test.pred,.outcomeTest=test.true, .modelNames=c("m1", "m2", "m3","m4"))#
+expect_error(calibrateEnsemble(this.ForecastData, model="logit", tol=0.01, maxIter=25000, exp=3,useModelPara=FALSE))#
+})
+context("test that results are same as in Raftery package")#
+#create data frame#
+data(presidentialForecast)#
+tyn=15#
+a=1#
+train.years=14#
+dates <- rep(NA, tyn)#
+   for (i in 1:tyn){#
+     dates[i] <- paste("2011", "01", 10+i, "01", sep="")#
+    }#
+#
+   pred.date <- dates[tyn]#
+full.forecasts<-presidentialForecast[,c(1:6)]#
+full.observed<-presidentialForecast[,7]#
+library(ensembleBMA)#
+test_that("same result as in Raftery",{#
+   my.E.data <- ensembleData(forecasts=(full.forecasts)^(1/a), dates=dates, observations=full.observed,#
+                             initializationTime=1, forecastHour=1) #Make a dataset of the appropriate format for the ensembleBMA package#
+   fit.eBMA <- ensembleBMAnormal(my.E.data, trainingDays=train.years, dates=pred.date, minCRPS=FALSE,#
+                              control=controlBMAnormal(biasCorrection="none",tol=0.000000001))#
+my.data<-makeForecastData(.predCalibration=full.forecasts[c(1:14),],.outcomeCalibration=full.observed[c(1:14)],.predTest=full.forecasts[15,],.outcomeTest=full.observed[15], c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz"))#
+check1<-calibrateEnsemble(my.data, model="normal", maxIter=25000,useModelPara=FALSE,tol=0.000000001)#
+round(check1@modelWeights,4)                            #
+## this needs to be fixed#
+round(fit.eBMA$weights,4)#
+check2<-as.numeric(round(as.matrix(check1@modelWeights)[1:5,],3))#
+expect_that(as.numeric(round(as.matrix(fit.eBMA$weights)[1:5,],3)),equals(check2))#
+})
+context("test that results are same as in Raftery package with missing obs")#
+data(presidentialForecast)#
+tyn=15#
+a=1#
+train.years=14#
+#
+dates <- rep(NA, tyn)#
+   for (i in 1:tyn){#
+     dates[i] <- paste("2011", "01", 10+i, "01", sep="")#
+    }#
+#
+   pred.date <- dates[tyn]#
+full.forecasts<-presidentialForecast[,c(1:6)]#
+full.observed<-presidentialForecast[,7]#
+full.forecasts[1,6]<-NA#
+full.forecasts[3,2]<-NA#
+full.forecasts[2,2]<-NA#
+full.forecasts[7,2]<-NA#
+full.forecasts[6,1]<-NA#
+full.forecasts[14,2]<-NA#
+full.forecasts[7,6]<-NA#
+library(ensembleBMA)#
+test_that("same result as in Raftery",{#
+   my.E.data <- ensembleData(forecasts=(full.forecasts)^(1/1), dates=dates, observations=full.observed,#
+                             initializationTime=1, forecastHour=1) #Make a dataset of the appropriate format for the ensembleBMA package#
+   fit.eBMA <- ensembleBMAnormal(my.E.data, trainingDays=train.years, dates=pred.date, minCRPS=FALSE,#
+                              control=controlBMAnormal(biasCorrection="none",tol=0.00000001))#
+my.data<-makeForecastData(.predCalibration=full.forecasts[c(1:14),],.outcomeCalibration=full.observed[c(1:14)],.predTest=full.forecasts[15,],.outcomeTest=full.observed[15], c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz"))#
+check13<-calibrateEnsemble(my.data, model="normal", maxIter=25000,useModelPara=FALSE,tol=0.00000001)#
+## this needs to be fixed#
+check2<-as.numeric(round(as.matrix(check13@modelWeights),3))#
+expect_that(as.numeric(round(as.matrix(fit.eBMA$weights),3)),equals(check2))#
+})
+help(EBMAforecast)
+rm(list=ls(all=TRUE))#
+library("multicore")#
+library("foreach")#
+library("doMC")#
+library(devtools)#
+library(roxygen2)#
+library(testthat)#
+ud <- read.csv("~/Dropbox/EBMA/MovedFromGithub/APSA_2012/Data/unemployment_data.csv", as.is=TRUE, header=TRUE, row.names=1)#
+#
+ud4 <- subset(ud, variable=="UNEMP6")#
+ud4 <- subset(ud4, forecast.year.quarter>1971.2)#
+ud4 <- ud4[rowMeans(is.na(ud4[,-c(1:3)]))!=1,]#
+ud4Green <- ud4[,c("forecast.year.quarter", "greenbook", "variable")]#
+ud4 <- ud4[,c(1,3,2,4:430)]#
+colnames(ud4)[430] <- "XGB"#
+#
+myTestFunction <- function(.windowSize=30, .minCal=15, .predYearQuarter="1980.1", .const=0, data=NULL, .imp=FALSE){#
+  .predThis <- which(data$forecast.year.quarter==.predYearQuarter)#
+  .theseRows <- (.predThis-.windowSize-1):(.predThis-1)#
+  .all <- length(.theseRows)#
+  .selector <- colSums(is.na(data[.theseRows,]))<=(.all-.minCal) & !is.na(data[.predThis,])#
+  .reduced <- data[.theseRows, .selector]#
+#
+   # this code takes out any row where we now have no forecasts#
+  .rowSelector <- !(rowMeans(is.na(.reduced[,-(1:3)]))==1)#
+  .reduced <- .reduced[.rowSelector,]#
+  .target <- data[.predThis, .selector]#
+#
+  .FD <- makeForecastData(.predCalibration=.reduced[,-c(1:3)]#
+                          ,.outcomeCalibration=.reduced[,2]#
+                          ,.predTest=.target[,-c(1:3)]#
+                          ,.outcomeTest=.target[,2]#
+                          ,.modelNames=colnames(.reduced[,-c(1:3)])#
+                          )#
+#
+  ensemble <- calibrateEnsemble(.forecastData=.FD, model="normal", useModelParams=FALSE, const=.const, predType="posteriorMedian")#
+  output <- matrix(c(as.numeric(rownames(data[.predThis,])), ensemble@predTest[1], as.numeric(ensemble@modelWeights)), nrow=1)#
+  output <- data.frame(output)#
+  colnames(output) <- c("row", "EBMA", ensemble@modelNames)#
+  output#
+}#
+#
+registerDoMC(cores=4)#
+thisSweep1<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=4, .const=0, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep2<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=4, .const=.05, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep3<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=4, .const=.10, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep4<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=4, .const=1, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+#
+modelFits <- function(.thisOutcome, .thisForecastMatrix, .thisBaseline){#
+  .absErr <- abs(.thisForecastMatrix-.thisOutcome)#
+  .sqrErr <- .absErr^2#
+  .ape <- .absErr/abs(.thisOutcome) # absolute percent error#
+#
+  ## Mean absolute errror#
+  mae <- colMeans(.absErr, na.rm=TRUE)#
+#
+  ## Root mean squared error#
+  rmse <-  sqrt(colMeans(.sqrErr, na.rm=TRUE))#
+#
+  ## Median absolute deviation#
+  mad <- apply(.absErr, 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## Root mean Squaqred logarithmic error#
+  .rmsle <- function(x, y){#
+    sqrt(mean((log(abs(x)+1)-log(abs(y)+1))^2, na.rm=TRUE))#
+  }#
+  rmsle <- apply(.thisForecastMatrix, 2, .rmsle, y=.thisOutcome)#
+#
+  ## mean absolute percentage error#
+  mape <- colMeans(.ape, na.rm=TRUE)*100#
+#
+  ##median absolute percentage errro#
+  meape <-  apply(.ape, 2, quantile, prob=.5, na.rm=TRUE)*100#
+#
+  ## median relative absolute error#
+  .eStar <- .thisOutcome-.thisBaseline#
+  .e <- .thisOutcome-.thisForecastMatrix#
+#
+  mrae <- apply(abs(.e/.eStar), 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## percent worse#
+  pw <- colMeans(abs(.e)>abs(.eStar), na.rm =TRUE)*100#
+  out <- cbind(mae, rmse, mad, rmsle, mape, meape, mrae, pw)#
+  return(out)#
+}#
+data=ud4#
+.lagAmount=4#
+.lag <-c(rep(NA, .lagAmount), data[1:(nrow(data)-.lagAmount),2])#
+names(.lag) <- rownames(data)#
+#
+.modelNames <- colnames(thisSweep2)[-c(1:2)]#
+.ensemblePred1 <- thisSweep1$EBMA#
+.ensemblePred2 <- thisSweep2$EBMA#
+.ensemblePred3 <- thisSweep3$EBMA#
+.ensemblePred4 <- thisSweep4$EBMA#
+#
+.theseRows <- as.character(thisSweep2$row)#
+.modelPreds <- data[.theseRows,.modelNames]#
+.modelWeights <- thisSweep2[,-c(1:2)]#
+.outcome <- data[.theseRows, 2]#
+.lag <- .lag[.theseRows]#
+.nrow=dim(.modelPreds)[1]; .ncol=dim(.modelPreds)[2]#
+#
+modelOut <- modelFits(.outcome, .modelPreds, .lag)#
+#
+## Now I need to calculate similar stats for the EBMA, but for the correct observations#
+.ensemblePredMatrix <- matrix(.ensemblePred2, nrow=nrow(.modelPreds), ncol=ncol(.modelPreds))#
+.ensemblePredMatrix[is.na(.modelPreds)] <- NA#
+#
+ensembleOut <- modelFits(.outcome, .ensemblePredMatrix, .lag)#
+#
+## Total number of forecasts for models we are comparing ourselves with#
+count <- colSums(!is.na(.modelPreds))#
+length(count) # total number of models included#
+### For model comparison table#
+pct_better<-rowMeans((modelOut-ensembleOut)>=0)*100#
+rownames<-seq(1,length(count))#
+for_table<-as.data.frame(cbind(count,pct_better))
+library(EBMAforecast)
+registerDoMC(cores=4)#
+thisSweep1<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=4, .const=0, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep2<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=4, .const=.05, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep3<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=4, .const=.10, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep4<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=4, .const=1, .parallel=TRUE,  .imp=FALSE, data=ud4)
+modelFits <- function(.thisOutcome, .thisForecastMatrix, .thisBaseline){#
+  .absErr <- abs(.thisForecastMatrix-.thisOutcome)#
+  .sqrErr <- .absErr^2#
+  .ape <- .absErr/abs(.thisOutcome) # absolute percent error#
+#
+  ## Mean absolute errror#
+  mae <- colMeans(.absErr, na.rm=TRUE)#
+#
+  ## Root mean squared error#
+  rmse <-  sqrt(colMeans(.sqrErr, na.rm=TRUE))#
+#
+  ## Median absolute deviation#
+  mad <- apply(.absErr, 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## Root mean Squaqred logarithmic error#
+  .rmsle <- function(x, y){#
+    sqrt(mean((log(abs(x)+1)-log(abs(y)+1))^2, na.rm=TRUE))#
+  }#
+  rmsle <- apply(.thisForecastMatrix, 2, .rmsle, y=.thisOutcome)#
+#
+  ## mean absolute percentage error#
+  mape <- colMeans(.ape, na.rm=TRUE)*100#
+#
+  ##median absolute percentage errro#
+  meape <-  apply(.ape, 2, quantile, prob=.5, na.rm=TRUE)*100#
+#
+  ## median relative absolute error#
+  .eStar <- .thisOutcome-.thisBaseline#
+  .e <- .thisOutcome-.thisForecastMatrix#
+#
+  mrae <- apply(abs(.e/.eStar), 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## percent worse#
+  pw <- colMeans(abs(.e)>abs(.eStar), na.rm =TRUE)*100#
+  out <- cbind(mae, rmse, mad, rmsle, mape, meape, mrae, pw)#
+  return(out)#
+}#
+data=ud4#
+.lagAmount=4#
+.lag <-c(rep(NA, .lagAmount), data[1:(nrow(data)-.lagAmount),2])#
+names(.lag) <- rownames(data)#
+#
+.modelNames <- colnames(thisSweep2)[-c(1:2)]#
+.ensemblePred1 <- thisSweep1$EBMA#
+.ensemblePred2 <- thisSweep2$EBMA#
+.ensemblePred3 <- thisSweep3$EBMA#
+.ensemblePred4 <- thisSweep4$EBMA#
+#
+.theseRows <- as.character(thisSweep2$row)#
+.modelPreds <- data[.theseRows,.modelNames]#
+.modelWeights <- thisSweep2[,-c(1:2)]#
+.outcome <- data[.theseRows, 2]#
+.lag <- .lag[.theseRows]#
+.nrow=dim(.modelPreds)[1]; .ncol=dim(.modelPreds)[2]#
+#
+modelOut <- modelFits(.outcome, .modelPreds, .lag)#
+#
+## Now I need to calculate similar stats for the EBMA, but for the correct observations#
+.ensemblePredMatrix <- matrix(.ensemblePred2, nrow=nrow(.modelPreds), ncol=ncol(.modelPreds))#
+.ensemblePredMatrix[is.na(.modelPreds)] <- NA#
+#
+ensembleOut <- modelFits(.outcome, .ensemblePredMatrix, .lag)#
+#
+## Total number of forecasts for models we are comparing ourselves with#
+count <- colSums(!is.na(.modelPreds))#
+length(count) # total number of models included#
+### For model comparison table#
+pct_better<-rowMeans((modelOut-ensembleOut)>=0)*100#
+rownames<-seq(1,length(count))#
+for_table<-as.data.frame(cbind(count,pct_better))#
+#save(for_table, file="for_table.RData")#
+#load("for_table.RData")#
+cell_025_010<-sum(ifelse(for_table$count <11 & for_table$pct_better<26,1,0))#
+cell_2650_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better<26,1,0))#
+cell_2650_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_1130<-sum(ifelse(for_table$count >10 & for_table$count<31 &for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better<26,1,0))#
+cell_2650_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_3160<-sum(ifelse(for_table$count >30 &for_table$count<61  & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_61<-sum(ifelse(for_table$count >60 & for_table$pct_better<26,1,0))#
+cell_2650_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+mat<-matrix(ncol=4,nrow=4,c(cell_76100_010, cell_5175_010, cell_2650_010, cell_025_010, cell_76100_1130, cell_5175_1130, cell_2650_1130, cell_025_1130, cell_76100_3160, cell_5175_3160, cell_2650_3160, cell_025_3160, cell_76100_61, cell_5175_61, cell_2650_61, cell_025_61),byrow=F)#
+all<-sum(mat)#
+sum(mat)#
+colSums(mat)#
+matOut <- rbind(mat, colSums(mat))#
+for(i in 1:4){#
+matOut[i,] <-  matOut[i,]/matOut[5,]#
+}#
+##### Table 6 in Paper#
+library(xtable)#
+xtable(matOut)
+##### Now compare just against three other baseline models#
+.mean <- rowMeans(data[.theseRows,-c(1:3)], na.rm=TRUE) # an alternate metric#
+.median <- apply(data[.theseRows,-c(1:3)], 1, quantile, probs=.5, na.rm=TRUE)#
+.green <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$greenbook#
+.time <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$forecast.year.quarter#
+#
+all <- cbind(.ensemblePred1, .ensemblePred2, .ensemblePred3, .ensemblePred4, .mean, .median, .green)#
+all <- all[!is.na(.green),]#
+.redOut <- .outcome[!is.na(.green)]#
+.redLag <- .lag[!is.na(.green)]#
+.outTable <- modelFits(.redOut, all, .redLag)#
+xtable(.outTable)#
+.outTable
+xtable(matOut)
+myTestFunction <- function(.windowSize=30, .minCal=15, .predYearQuarter="1980.1", .const=0, data=NULL, .imp=FALSE){#
+  .predThis <- which(data$forecast.year.quarter==.predYearQuarter)#
+  .theseRows <- (.predThis-.windowSize-1):(.predThis-1)#
+  .all <- length(.theseRows)#
+  .selector <- colSums(is.na(data[.theseRows,]))<(.all-.minCal) & !is.na(data[.predThis,])#
+  .reduced <- data[.theseRows, .selector]#
+#
+   # this code takes out any row where we now have no forecasts#
+  .rowSelector <- !(rowMeans(is.na(.reduced[,-(1:3)]))==1)#
+  .reduced <- .reduced[.rowSelector,]#
+  .target <- data[.predThis, .selector]#
+#
+  .FD <- makeForecastData(.predCalibration=.reduced[,-c(1:3)]#
+                          ,.outcomeCalibration=.reduced[,2]#
+                          ,.predTest=.target[,-c(1:3)]#
+                          ,.outcomeTest=.target[,2]#
+                          ,.modelNames=colnames(.reduced[,-c(1:3)])#
+                          )#
+#
+  ensemble <- calibrateEnsemble(.forecastData=.FD, model="normal", useModelParams=FALSE, const=.const, predType="posteriorMedian")#
+  output <- matrix(c(as.numeric(rownames(data[.predThis,])), ensemble@predTest[1], as.numeric(ensemble@modelWeights)), nrow=1)#
+  output <- data.frame(output)#
+  colnames(output) <- c("row", "EBMA", ensemble@modelNames)#
+  output#
+}#
+#
+registerDoMC(cores=4)#
+thisSweep1<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=4, .const=0, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep2<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=4, .const=.05, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep3<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=4, .const=.10, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep4<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=4, .const=1, .parallel=TRUE,  .imp=FALSE, data=ud4)
+modelFits <- function(.thisOutcome, .thisForecastMatrix, .thisBaseline){#
+  .absErr <- abs(.thisForecastMatrix-.thisOutcome)#
+  .sqrErr <- .absErr^2#
+  .ape <- .absErr/abs(.thisOutcome) # absolute percent error#
+#
+  ## Mean absolute errror#
+  mae <- colMeans(.absErr, na.rm=TRUE)#
+#
+  ## Root mean squared error#
+  rmse <-  sqrt(colMeans(.sqrErr, na.rm=TRUE))#
+#
+  ## Median absolute deviation#
+  mad <- apply(.absErr, 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## Root mean Squaqred logarithmic error#
+  .rmsle <- function(x, y){#
+    sqrt(mean((log(abs(x)+1)-log(abs(y)+1))^2, na.rm=TRUE))#
+  }#
+  rmsle <- apply(.thisForecastMatrix, 2, .rmsle, y=.thisOutcome)#
+#
+  ## mean absolute percentage error#
+  mape <- colMeans(.ape, na.rm=TRUE)*100#
+#
+  ##median absolute percentage errro#
+  meape <-  apply(.ape, 2, quantile, prob=.5, na.rm=TRUE)*100#
+#
+  ## median relative absolute error#
+  .eStar <- .thisOutcome-.thisBaseline#
+  .e <- .thisOutcome-.thisForecastMatrix#
+#
+  mrae <- apply(abs(.e/.eStar), 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## percent worse#
+  pw <- colMeans(abs(.e)>abs(.eStar), na.rm =TRUE)*100#
+  out <- cbind(mae, rmse, mad, rmsle, mape, meape, mrae, pw)#
+  return(out)#
+}#
+data=ud4#
+.lagAmount=4#
+.lag <-c(rep(NA, .lagAmount), data[1:(nrow(data)-.lagAmount),2])#
+names(.lag) <- rownames(data)#
+#
+.modelNames <- colnames(thisSweep2)[-c(1:2)]#
+.ensemblePred1 <- thisSweep1$EBMA#
+.ensemblePred2 <- thisSweep2$EBMA#
+.ensemblePred3 <- thisSweep3$EBMA#
+.ensemblePred4 <- thisSweep4$EBMA#
+#
+.theseRows <- as.character(thisSweep2$row)#
+.modelPreds <- data[.theseRows,.modelNames]#
+.modelWeights <- thisSweep2[,-c(1:2)]#
+.outcome <- data[.theseRows, 2]#
+.lag <- .lag[.theseRows]#
+.nrow=dim(.modelPreds)[1]; .ncol=dim(.modelPreds)[2]#
+#
+modelOut <- modelFits(.outcome, .modelPreds, .lag)#
+#
+## Now I need to calculate similar stats for the EBMA, but for the correct observations#
+.ensemblePredMatrix <- matrix(.ensemblePred2, nrow=nrow(.modelPreds), ncol=ncol(.modelPreds))#
+.ensemblePredMatrix[is.na(.modelPreds)] <- NA#
+#
+ensembleOut <- modelFits(.outcome, .ensemblePredMatrix, .lag)#
+#
+## Total number of forecasts for models we are comparing ourselves with#
+count <- colSums(!is.na(.modelPreds))#
+length(count) # total number of models included#
+### For model comparison table#
+pct_better<-rowMeans((modelOut-ensembleOut)>=0)*100#
+rownames<-seq(1,length(count))#
+for_table<-as.data.frame(cbind(count,pct_better))#
+#save(for_table, file="for_table.RData")#
+#load("for_table.RData")#
+cell_025_010<-sum(ifelse(for_table$count <11 & for_table$pct_better<26,1,0))#
+cell_2650_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better<26,1,0))#
+cell_2650_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_1130<-sum(ifelse(for_table$count >10 & for_table$count<31 &for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better<26,1,0))#
+cell_2650_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_3160<-sum(ifelse(for_table$count >30 &for_table$count<61  & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_61<-sum(ifelse(for_table$count >60 & for_table$pct_better<26,1,0))#
+cell_2650_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+mat<-matrix(ncol=4,nrow=4,c(cell_76100_010, cell_5175_010, cell_2650_010, cell_025_010, cell_76100_1130, cell_5175_1130, cell_2650_1130, cell_025_1130, cell_76100_3160, cell_5175_3160, cell_2650_3160, cell_025_3160, cell_76100_61, cell_5175_61, cell_2650_61, cell_025_61),byrow=F)#
+all<-sum(mat)#
+sum(mat)#
+colSums(mat)#
+matOut <- rbind(mat, colSums(mat))#
+for(i in 1:4){#
+matOut[i,] <-  matOut[i,]/matOut[5,]#
+}#
+##### Table 6 in Paper#
+library(xtable)#
+xtable(matOut)#
+##### Now compare just against three other baseline models#
+.mean <- rowMeans(data[.theseRows,-c(1:3)], na.rm=TRUE) # an alternate metric#
+.median <- apply(data[.theseRows,-c(1:3)], 1, quantile, probs=.5, na.rm=TRUE)#
+.green <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$greenbook#
+.time <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$forecast.year.quarter#
+#
+all <- cbind(.ensemblePred1, .ensemblePred2, .ensemblePred3, .ensemblePred4, .mean, .median, .green)#
+all <- all[!is.na(.green),]#
+.redOut <- .outcome[!is.na(.green)]#
+.redLag <- .lag[!is.na(.green)]#
+.outTable <- modelFits(.redOut, all, .redLag)#
+xtable(.outTable)#
+.outTable
+xtable(matOut)
+thisSweep1<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=0, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep2<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=.05, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep3<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=.10, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep4<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=1, .parallel=TRUE,  .imp=FALSE, data=ud4)
+data=ud4#
+.lagAmount=4#
+.lag <-c(rep(NA, .lagAmount), data[1:(nrow(data)-.lagAmount),2])#
+names(.lag) <- rownames(data)#
+#
+.modelNames <- colnames(thisSweep2)[-c(1:2)]#
+.ensemblePred1 <- thisSweep1$EBMA#
+.ensemblePred2 <- thisSweep2$EBMA#
+.ensemblePred3 <- thisSweep3$EBMA#
+.ensemblePred4 <- thisSweep4$EBMA#
+#
+.theseRows <- as.character(thisSweep2$row)#
+.modelPreds <- data[.theseRows,.modelNames]#
+.modelWeights <- thisSweep2[,-c(1:2)]#
+.outcome <- data[.theseRows, 2]#
+.lag <- .lag[.theseRows]#
+.nrow=dim(.modelPreds)[1]; .ncol=dim(.modelPreds)[2]#
+#
+modelOut <- modelFits(.outcome, .modelPreds, .lag)#
+#
+## Now I need to calculate similar stats for the EBMA, but for the correct observations#
+.ensemblePredMatrix <- matrix(.ensemblePred2, nrow=nrow(.modelPreds), ncol=ncol(.modelPreds))#
+.ensemblePredMatrix[is.na(.modelPreds)] <- NA#
+#
+ensembleOut <- modelFits(.outcome, .ensemblePredMatrix, .lag)#
+#
+## Total number of forecasts for models we are comparing ourselves with#
+count <- colSums(!is.na(.modelPreds))#
+length(count) # total number of models included#
+### For model comparison table#
+pct_better<-rowMeans((modelOut-ensembleOut)>=0)*100#
+rownames<-seq(1,length(count))#
+for_table<-as.data.frame(cbind(count,pct_better))#
+#save(for_table, file="for_table.RData")#
+#load("for_table.RData")#
+cell_025_010<-sum(ifelse(for_table$count <11 & for_table$pct_better<26,1,0))#
+cell_2650_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better<26,1,0))#
+cell_2650_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_1130<-sum(ifelse(for_table$count >10 & for_table$count<31 &for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better<26,1,0))#
+cell_2650_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_3160<-sum(ifelse(for_table$count >30 &for_table$count<61  & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_61<-sum(ifelse(for_table$count >60 & for_table$pct_better<26,1,0))#
+cell_2650_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+mat<-matrix(ncol=4,nrow=4,c(cell_76100_010, cell_5175_010, cell_2650_010, cell_025_010, cell_76100_1130, cell_5175_1130, cell_2650_1130, cell_025_1130, cell_76100_3160, cell_5175_3160, cell_2650_3160, cell_025_3160, cell_76100_61, cell_5175_61, cell_2650_61, cell_025_61),byrow=F)#
+all<-sum(mat)#
+sum(mat)#
+colSums(mat)#
+matOut <- rbind(mat, colSums(mat))#
+for(i in 1:4){#
+matOut[i,] <-  matOut[i,]/matOut[5,]#
+}#
+##### Table 6 in Paper#
+library(xtable)#
+xtable(matOut)
+##### Now compare just against three other baseline models#
+.mean <- rowMeans(data[.theseRows,-c(1:3)], na.rm=TRUE) # an alternate metric#
+.median <- apply(data[.theseRows,-c(1:3)], 1, quantile, probs=.5, na.rm=TRUE)#
+.green <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$greenbook#
+.time <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$forecast.year.quarter#
+#
+all <- cbind(.ensemblePred1, .ensemblePred2, .ensemblePred3, .ensemblePred4, .mean, .median, .green)#
+all <- all[!is.na(.green),]#
+.redOut <- .outcome[!is.na(.green)]#
+.redLag <- .lag[!is.na(.green)]#
+.outTable <- modelFits(.redOut, all, .redLag)#
+xtable(.outTable)#
+.outTable
+library(EBMAforecast)
+rm(list=ls(all=TRUE))#
+library("multicore")#
+library("foreach")#
+library("doMC")#
+library(devtools)#
+library(roxygen2)#
+library(testthat)
+ud <- read.csv("~/Dropbox/EBMA/MovedFromGithub/APSA_2012/Data/unemployment_data.csv", as.is=TRUE, header=TRUE, row.names=1)#
+#
+ud4 <- subset(ud, variable=="UNEMP6")#
+ud4 <- subset(ud4, forecast.year.quarter>1971.2)#
+ud4 <- ud4[rowMeans(is.na(ud4[,-c(1:3)]))!=1,]#
+ud4Green <- ud4[,c("forecast.year.quarter", "greenbook", "variable")]#
+ud4 <- ud4[,c(1,3,2,4:430)]#
+colnames(ud4)[430] <- "XGB"#
+#
+myTestFunction <- function(.windowSize=30, .minCal=15, .predYearQuarter="1980.1", .const=0, data=NULL, .imp=FALSE){#
+  .predThis <- which(data$forecast.year.quarter==.predYearQuarter)#
+  .theseRows <- (.predThis-.windowSize-1):(.predThis-1)#
+  .all <- length(.theseRows)#
+  .selector <- colSums(is.na(data[.theseRows,]))<(.all-.minCal) & !is.na(data[.predThis,])#
+  .reduced <- data[.theseRows, .selector]#
+#
+   # this code takes out any row where we now have no forecasts#
+  .rowSelector <- !(rowMeans(is.na(.reduced[,-(1:3)]))==1)#
+  .reduced <- .reduced[.rowSelector,]#
+  .target <- data[.predThis, .selector]#
+#
+  .FD <- makeForecastData(.predCalibration=.reduced[,-c(1:3)]#
+                          ,.outcomeCalibration=.reduced[,2]#
+                          ,.predTest=.target[,-c(1:3)]#
+                          ,.outcomeTest=.target[,2]#
+                          ,.modelNames=colnames(.reduced[,-c(1:3)])#
+                          )#
+#
+  ensemble <- calibrateEnsemble(.forecastData=.FD, model="normal", useModelParams=FALSE, const=.const, predType="posteriorMedian")#
+  output <- matrix(c(as.numeric(rownames(data[.predThis,])), ensemble@predTest[1], as.numeric(ensemble@modelWeights)), nrow=1)#
+  output <- data.frame(output)#
+  colnames(output) <- c("row", "EBMA", ensemble@modelNames)#
+  output#
+}#
+#
+registerDoMC(cores=4)#
+thisSweep1<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=0, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep2<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=.05, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep3<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=.10, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep4<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=1, .parallel=TRUE,  .imp=FALSE, data=ud4)
+modelFits <- function(.thisOutcome, .thisForecastMatrix, .thisBaseline){#
+  .absErr <- abs(.thisForecastMatrix-.thisOutcome)#
+  .sqrErr <- .absErr^2#
+  .ape <- .absErr/abs(.thisOutcome) # absolute percent error#
+#
+  ## Mean absolute errror#
+  mae <- colMeans(.absErr, na.rm=TRUE)#
+#
+  ## Root mean squared error#
+  rmse <-  sqrt(colMeans(.sqrErr, na.rm=TRUE))#
+#
+  ## Median absolute deviation#
+  mad <- apply(.absErr, 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## Root mean Squaqred logarithmic error#
+  .rmsle <- function(x, y){#
+    sqrt(mean((log(abs(x)+1)-log(abs(y)+1))^2, na.rm=TRUE))#
+  }#
+  rmsle <- apply(.thisForecastMatrix, 2, .rmsle, y=.thisOutcome)#
+#
+  ## mean absolute percentage error#
+  mape <- colMeans(.ape, na.rm=TRUE)*100#
+#
+  ##median absolute percentage errro#
+  meape <-  apply(.ape, 2, quantile, prob=.5, na.rm=TRUE)*100#
+#
+  ## median relative absolute error#
+  .eStar <- .thisOutcome-.thisBaseline#
+  .e <- .thisOutcome-.thisForecastMatrix#
+#
+  mrae <- apply(abs(.e/.eStar), 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## percent worse#
+  pw <- colMeans(abs(.e)>abs(.eStar), na.rm =TRUE)*100#
+  out <- cbind(mae, rmse, mad, rmsle, mape, meape, mrae, pw)#
+  return(out)#
+}#
+data=ud4#
+.lagAmount=4#
+.lag <-c(rep(NA, .lagAmount), data[1:(nrow(data)-.lagAmount),2])#
+names(.lag) <- rownames(data)#
+#
+.modelNames <- colnames(thisSweep2)[-c(1:2)]#
+.ensemblePred1 <- thisSweep1$EBMA#
+.ensemblePred2 <- thisSweep2$EBMA#
+.ensemblePred3 <- thisSweep3$EBMA#
+.ensemblePred4 <- thisSweep4$EBMA#
+#
+.theseRows <- as.character(thisSweep2$row)#
+.modelPreds <- data[.theseRows,.modelNames]#
+.modelWeights <- thisSweep2[,-c(1:2)]#
+.outcome <- data[.theseRows, 2]#
+.lag <- .lag[.theseRows]#
+.nrow=dim(.modelPreds)[1]; .ncol=dim(.modelPreds)[2]#
+#
+modelOut <- modelFits(.outcome, .modelPreds, .lag)#
+#
+## Now I need to calculate similar stats for the EBMA, but for the correct observations#
+.ensemblePredMatrix <- matrix(.ensemblePred2, nrow=nrow(.modelPreds), ncol=ncol(.modelPreds))#
+.ensemblePredMatrix[is.na(.modelPreds)] <- NA#
+#
+ensembleOut <- modelFits(.outcome, .ensemblePredMatrix, .lag)#
+#
+## Total number of forecasts for models we are comparing ourselves with#
+count <- colSums(!is.na(.modelPreds))#
+length(count) # total number of models included#
+### For model comparison table#
+pct_better<-rowMeans((modelOut-ensembleOut)>=0)*100#
+rownames<-seq(1,length(count))#
+for_table<-as.data.frame(cbind(count,pct_better))#
+#save(for_table, file="for_table.RData")#
+#load("for_table.RData")#
+cell_025_010<-sum(ifelse(for_table$count <11 & for_table$pct_better<26,1,0))#
+cell_2650_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better<26,1,0))#
+cell_2650_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_1130<-sum(ifelse(for_table$count >10 & for_table$count<31 &for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better<26,1,0))#
+cell_2650_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_3160<-sum(ifelse(for_table$count >30 &for_table$count<61  & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_61<-sum(ifelse(for_table$count >60 & for_table$pct_better<26,1,0))#
+cell_2650_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+mat<-matrix(ncol=4,nrow=4,c(cell_76100_010, cell_5175_010, cell_2650_010, cell_025_010, cell_76100_1130, cell_5175_1130, cell_2650_1130, cell_025_1130, cell_76100_3160, cell_5175_3160, cell_2650_3160, cell_025_3160, cell_76100_61, cell_5175_61, cell_2650_61, cell_025_61),byrow=F)#
+all<-sum(mat)#
+sum(mat)#
+colSums(mat)#
+matOut <- rbind(mat, colSums(mat))#
+for(i in 1:4){#
+matOut[i,] <-  matOut[i,]/matOut[5,]#
+}#
+##### Table 6 in Paper#
+library(xtable)#
+xtable(matOut)
+##### Now compare just against three other baseline models#
+.mean <- rowMeans(data[.theseRows,-c(1:3)], na.rm=TRUE) # an alternate metric#
+.median <- apply(data[.theseRows,-c(1:3)], 1, quantile, probs=.5, na.rm=TRUE)#
+.green <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$greenbook#
+.time <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$forecast.year.quarter#
+#
+all <- cbind(.ensemblePred1, .ensemblePred2, .ensemblePred3, .ensemblePred4, .mean, .median, .green)#
+all <- all[!is.na(.green),]#
+.redOut <- .outcome[!is.na(.green)]#
+.redLag <- .lag[!is.na(.green)]#
+.outTable <- modelFits(.redOut, all, .redLag)#
+xtable(.outTable)#
+.outTable
+myTestFunction <- function(.windowSize=30, .minCal=15, .predYearQuarter="1980.1", .const=0, data=NULL, .imp=FALSE){#
+  .predThis <- which(data$forecast.year.quarter==.predYearQuarter)#
+  .theseRows <- (.predThis-.windowSize-1):(.predThis-1)#
+  .all <- length(.theseRows)#
+  .selector <- colSums(is.na(data[.theseRows,]))<(.all-.minCal) & !is.na(data[.predThis,])#
+  .reduced <- data[.theseRows, .selector]#
+#
+   # this code takes out any row where we now have no forecasts#
+  .rowSelector <- !(rowMeans(is.na(.reduced[,-(1:3)]))==1)#
+  .reduced <- .reduced[.rowSelector,]#
+  .target <- data[.predThis, .selector]#
+#
+  .FD <- makeForecastData(.predCalibration=.reduced[,-c(1:3)]#
+                          ,.outcomeCalibration=.reduced[,2]#
+                          ,.predTest=.target[,-c(1:3)]#
+                          ,.outcomeTest=.target[,2]#
+                          ,.modelNames=colnames(.reduced[,-c(1:3)])#
+                          )#
+#
+  ensemble <- calibrateEnsemble(.forecastData=.FD, model="normal", useModelParams=FALSE, const=.const, predType="posteriorMean")#
+  output <- matrix(c(as.numeric(rownames(data[.predThis,])), ensemble@predTest[1], as.numeric(ensemble@modelWeights)), nrow=1)#
+  output <- data.frame(output)#
+  colnames(output) <- c("row", "EBMA", ensemble@modelNames)#
+  output#
+}
+thisSweep1<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=0, .parallel=TRUE,  .imp=FALSE, data=ud4)
+modelFits <- function(.thisOutcome, .thisForecastMatrix, .thisBaseline){#
+  .absErr <- abs(.thisForecastMatrix-.thisOutcome)#
+  .sqrErr <- .absErr^2#
+  .ape <- .absErr/abs(.thisOutcome) # absolute percent error#
+#
+  ## Mean absolute errror#
+  mae <- colMeans(.absErr, na.rm=TRUE)#
+#
+  ## Root mean squared error#
+  rmse <-  sqrt(colMeans(.sqrErr, na.rm=TRUE))#
+#
+  ## Median absolute deviation#
+  mad <- apply(.absErr, 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## Root mean Squaqred logarithmic error#
+  .rmsle <- function(x, y){#
+    sqrt(mean((log(abs(x)+1)-log(abs(y)+1))^2, na.rm=TRUE))#
+  }#
+  rmsle <- apply(.thisForecastMatrix, 2, .rmsle, y=.thisOutcome)#
+#
+  ## mean absolute percentage error#
+  mape <- colMeans(.ape, na.rm=TRUE)*100#
+#
+  ##median absolute percentage errro#
+  meape <-  apply(.ape, 2, quantile, prob=.5, na.rm=TRUE)*100#
+#
+  ## median relative absolute error#
+  .eStar <- .thisOutcome-.thisBaseline#
+  .e <- .thisOutcome-.thisForecastMatrix#
+#
+  mrae <- apply(abs(.e/.eStar), 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## percent worse#
+  pw <- colMeans(abs(.e)>abs(.eStar), na.rm =TRUE)*100#
+  out <- cbind(mae, rmse, mad, rmsle, mape, meape, mrae, pw)#
+  return(out)#
+}#
+data=ud4#
+.lagAmount=4#
+.lag <-c(rep(NA, .lagAmount), data[1:(nrow(data)-.lagAmount),2])#
+names(.lag) <- rownames(data)#
+#
+.modelNames <- colnames(thisSweep2)[-c(1:2)]#
+.ensemblePred1 <- thisSweep1$EBMA#
+.ensemblePred2 <- thisSweep2$EBMA#
+.ensemblePred3 <- thisSweep3$EBMA#
+.ensemblePred4 <- thisSweep4$EBMA#
+#
+.theseRows <- as.character(thisSweep2$row)#
+.modelPreds <- data[.theseRows,.modelNames]#
+.modelWeights <- thisSweep2[,-c(1:2)]#
+.outcome <- data[.theseRows, 2]#
+.lag <- .lag[.theseRows]#
+.nrow=dim(.modelPreds)[1]; .ncol=dim(.modelPreds)[2]#
+#
+modelOut <- modelFits(.outcome, .modelPreds, .lag)#
+#
+## Now I need to calculate similar stats for the EBMA, but for the correct observations#
+.ensemblePredMatrix <- matrix(.ensemblePred2, nrow=nrow(.modelPreds), ncol=ncol(.modelPreds))#
+.ensemblePredMatrix[is.na(.modelPreds)] <- NA#
+#
+ensembleOut <- modelFits(.outcome, .ensemblePredMatrix, .lag)#
+#
+## Total number of forecasts for models we are comparing ourselves with#
+count <- colSums(!is.na(.modelPreds))#
+length(count) # total number of models included#
+### For model comparison table#
+pct_better<-rowMeans((modelOut-ensembleOut)>=0)*100#
+rownames<-seq(1,length(count))#
+for_table<-as.data.frame(cbind(count,pct_better))#
+#save(for_table, file="for_table.RData")#
+#load("for_table.RData")#
+cell_025_010<-sum(ifelse(for_table$count <11 & for_table$pct_better<26,1,0))#
+cell_2650_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better<26,1,0))#
+cell_2650_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_1130<-sum(ifelse(for_table$count >10 & for_table$count<31 &for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better<26,1,0))#
+cell_2650_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_3160<-sum(ifelse(for_table$count >30 &for_table$count<61  & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_61<-sum(ifelse(for_table$count >60 & for_table$pct_better<26,1,0))#
+cell_2650_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+mat<-matrix(ncol=4,nrow=4,c(cell_76100_010, cell_5175_010, cell_2650_010, cell_025_010, cell_76100_1130, cell_5175_1130, cell_2650_1130, cell_025_1130, cell_76100_3160, cell_5175_3160, cell_2650_3160, cell_025_3160, cell_76100_61, cell_5175_61, cell_2650_61, cell_025_61),byrow=F)#
+all<-sum(mat)#
+sum(mat)#
+colSums(mat)#
+matOut <- rbind(mat, colSums(mat))#
+for(i in 1:4){#
+matOut[i,] <-  matOut[i,]/matOut[5,]#
+}#
+##### Table 6 in Paper#
+library(xtable)#
+xtable(matOut)#
+##### Now compare just against three other baseline models#
+.mean <- rowMeans(data[.theseRows,-c(1:3)], na.rm=TRUE) # an alternate metric#
+.median <- apply(data[.theseRows,-c(1:3)], 1, quantile, probs=.5, na.rm=TRUE)#
+.green <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$greenbook#
+.time <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$forecast.year.quarter#
+#
+all <- cbind(.ensemblePred1, .ensemblePred2, .ensemblePred3, .ensemblePred4, .mean, .median, .green)#
+all <- all[!is.na(.green),]#
+.redOut <- .outcome[!is.na(.green)]#
+.redLag <- .lag[!is.na(.green)]#
+.outTable <- modelFits(.redOut, all, .redLag)#
+xtable(.outTable)#
+.outTable
+rm(list=ls(all=TRUE))#
+library("multicore")#
+library("foreach")#
+library("doMC")#
+library(devtools)#
+library(roxygen2)#
+library(testthat)#
+ud <- read.csv("~/Dropbox/EBMA/MovedFromGithub/APSA_2012/Data/unemployment_data.csv", as.is=TRUE, header=TRUE, row.names=1)
+ud1 <- subset(ud, variable=="UNEMP3")#
+ud4 <- subset(ud, variable=="UNEMP6")#
+ud4 <- subset(ud4, forecast.year.quarter>1971.2)#
+ud4 <- ud4[rowMeans(is.na(ud4[,-c(1:3)]))!=1,]#
+#
+ud4Green <- ud4[,c("forecast.year.quarter", "greenbook", "variable")]#
+ud4 <- ud4[,c(1,3,2,4:429)]#
+ud1Green <- ud1[,c("forecast.year.quarter", "greenbook", "variable")]#
+ud1 <- ud1[,c(1,3,2,4:429)]#
+myTestFunction <- function(.windowSize=30, .minCal=15, .predYearQuarter="1980.1", .const=0, data=NULL, .imp=FALSE){#
+  .predThis <- which(data$forecast.year.quarter==.predYearQuarter)#
+#
+  .theseRows <- (.predThis-.windowSize-1):(.predThis-1)#
+  .all <- length(.theseRows)#
+  .selector <- colSums(is.na(data[.theseRows,]))<(.all-.minCal) & !is.na(data[.predThis,])#
+  .reduced <- data[.theseRows, .selector]#
+#
+   # this code takes out any row where we now have no forecasts#
+  .rowSelector <- !(rowMeans(is.na(.reduced[,-(1:3)]))==1)#
+  .reduced <- .reduced[.rowSelector,]#
+#
+  if(.imp){#
+    .reduced[,-c(1:3)] <- t(apply(.reduced[,-c(1:3)],1,#
+                                  function(x) {#
+                                    x[is.na(x)] <- mean(x, na.rm=TRUE)#
+                                    x#
+                                  }#
+                                  )#
+                            )#
+  }#
+  .target <- data[.predThis, .selector]#
+#
+  .FD <- makeForecastData(.predCalibration=.reduced[,-c(1:3)]#
+                          ,.outcomeCalibration=.reduced[,2]#
+                          ,.predTest=.target[,-c(1:3)]#
+                          ,.outcomeTest=.target[,2]#
+                          ,.modelNames=colnames(.reduced[,-c(1:3)])#
+                          )#
+#
+  ensemble <- calibrateEnsemble(.forecastData=.FD, model="normal", useModelParams=FALSE, const=.const)#
+  output <- matrix(c(as.numeric(rownames(data[.predThis,])), ensemble@predTest[1], as.numeric(ensemble@modelWeights)), nrow=1)#
+  output <- data.frame(output)#
+  colnames(output) <- c("row", "EBMA", ensemble@modelNames)#
+  output#
+}#
+#
+## a random tester to see if this is working
+registerDoMC(cores=4)
+thisSweep13<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=0, .parallel=TRUE,  .imp=FALSE, data=ud4)
+library(EBMAforecast)
+thisSweep13<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=0, .parallel=TRUE,  .imp=FALSE, data=ud4)
+modelFits <- function(.thisOutcome, .thisForecastMatrix, .thisBaseline){#
+  .absErr <- abs(.thisForecastMatrix-.thisOutcome)#
+  .sqrErr <- .absErr^2#
+  .ape <- .absErr/abs(.thisOutcome) # absolute percent error#
+#
+  ## Mean absolute errror#
+  mae <- colMeans(.absErr, na.rm=TRUE)#
+#
+  ## Root mean squared error#
+  rmse <-  sqrt(colMeans(.sqrErr, na.rm=TRUE))#
+#
+  ## Median absolute deviation#
+  mad <- apply(.absErr, 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## Root mean Squaqred logarithmic error#
+  .rmsle <- function(x, y){#
+    mean((log(abs(x)+1)-log(abs(y)+1))^2, na.rm=TRUE)#
+  }#
+  rmsle <- apply(.thisForecastMatrix, 2, .rmsle, y=.thisOutcome)#
+#
+  ## mean absolute percentage error#
+  mape <- colMeans(.ape, na.rm=TRUE)*100#
+#
+  ##median absolute percentage errro#
+  meape <-  apply(.ape, 2, quantile, prob=.5, na.rm=TRUE)*100#
+#
+  ## median relative absolute error#
+  .eStar <- .thisOutcome-.thisBaseline#
+  .e <- .thisOutcome-.thisForecastMatrix#
+  mrae <- apply(abs(.e/.eStar), 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## percent worse#
+  pw <- colMeans(abs(.e)>abs(.eStar), na.rm =TRUE)*100#
+  out <- cbind(mae, rmse, mad, rmsle, mape, meape, mrae, pw)#
+out#
+}#
+.sweep = thisSweep13#
+data=ud4#
+.lagAmount=4#
+.lag <-c(rep(NA, .lagAmount), data[1:(nrow(data)-.lagAmount),2])#
+names(.lag) <- rownames(data)#
+.modelNames <- colnames(.sweep)[-c(1:2)]#
+.ensemblePred <- .sweep$EBMA#
+.theseRows <- as.character(.sweep$row)#
+.modelPreds <- data[.theseRows,.modelNames]#
+.modelWeights <- .sweep[,-c(1:2)]#
+.outcome <- data[.theseRows, 2]#
+.lag <- .lag[.theseRows]#
+.nrow=dim(.modelPreds)[1]; .ncol=dim(.modelPreds)[2]#
+#
+modelOut <- modelFits(.outcome, .modelPreds, .lag)#
+cor(modelOut)#
+## Now I need to calculate similar stats for the EBMA, but for the correct observations#
+.ensemblePredMatrix <- matrix(.ensemblePred, nrow=nrow(.modelPreds), ncol=ncol(.modelPreds))#
+.ensemblePredMatrix[is.na(.modelPreds)] <- NA#
+#
+ensembleOut <- modelFits(.outcome, .ensemblePredMatrix, .lag)#
+#
+## Total number of forecasts for models we are comparing ourselves with#
+count <- colSums(!is.na(.modelPreds))
+##### Now compare just against three other baseline models#
+.mean <- rowMeans(data[.theseRows,-c(1:3)], na.rm=TRUE) # an alternate metric#
+.median <- apply(data[.theseRows,-c(1:3)], 1, quantile, probs=.5, na.rm=TRUE)#
+.green <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$greenbook#
+.time <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$forecast.year.quarter#
+#
+all <- cbind(.ensemblePred, .mean, .median, .green)#
+all <- all[!is.na(.green),]#
+.redOut <- .outcome[!is.na(.green)]#
+.redLag <- .lag[!is.na(.green)]#
+### A basic plot of all 3#
+plot(.time, .redOut, type="l", lwd=2)#
+for(i in 1:4){#
+  lines(.time, all[,i], col=1+i, lty=2)#
+}#
+#
+library(xtable)#
+.outTable <- modelFits(.redOut, all, .redLag)#
+xtable(.outTable[c(1,4,3,2),])
+modelFits <- function(.thisOutcome, .thisForecastMatrix, .thisBaseline){#
+  .absErr <- abs(.thisForecastMatrix-.thisOutcome)#
+  .sqrErr <- .absErr^2#
+  .ape <- .absErr/abs(.thisOutcome) # absolute percent error#
+#
+  ## Mean absolute errror#
+  mae <- colMeans(.absErr, na.rm=TRUE)#
+#
+  ## Root mean squared error#
+  rmse <-  sqrt(colMeans(.sqrErr, na.rm=TRUE))#
+#
+  ## Median absolute deviation#
+  mad <- apply(.absErr, 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## Root mean Squaqred logarithmic error#
+  .rmsle <- function(x, y){#
+    sqrt(mean((log(abs(x)+1)-log(abs(y)+1))^2, na.rm=TRUE))#
+  }#
+  rmsle <- apply(.thisForecastMatrix, 2, .rmsle, y=.thisOutcome)#
+#
+  ## mean absolute percentage error#
+  mape <- colMeans(.ape, na.rm=TRUE)*100#
+#
+  ##median absolute percentage errro#
+  meape <-  apply(.ape, 2, quantile, prob=.5, na.rm=TRUE)*100#
+#
+  ## median relative absolute error#
+  .eStar <- .thisOutcome-.thisBaseline#
+  .e <- .thisOutcome-.thisForecastMatrix#
+#
+  mrae <- apply(abs(.e/.eStar), 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## percent worse#
+  pw <- colMeans(abs(.e)>abs(.eStar), na.rm =TRUE)*100#
+  out <- cbind(mae, rmse, mad, rmsle, mape, meape, mrae, pw)#
+  return(out)#
+}
+thisSweep1<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=8, .minCal=4, .const=.00, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep2<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=8, .minCal=4, .const=.05, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep3<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=8, .minCal=4, .const=.10, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep4<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=8, .minCal=4, .const=1, .parallel=TRUE,  .imp=FALSE, data=ud4)
+modelFits <- function(.thisOutcome, .thisForecastMatrix, .thisBaseline){#
+  .absErr <- abs(.thisForecastMatrix-.thisOutcome)#
+  .sqrErr <- .absErr^2#
+  .ape <- .absErr/abs(.thisOutcome) # absolute percent error#
+#
+  ## Mean absolute errror#
+  mae <- colMeans(.absErr, na.rm=TRUE)#
+#
+  ## Root mean squared error#
+  rmse <-  sqrt(colMeans(.sqrErr, na.rm=TRUE))#
+#
+  ## Median absolute deviation#
+  mad <- apply(.absErr, 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## Root mean Squaqred logarithmic error#
+  .rmsle <- function(x, y){#
+    sqrt(mean((log(abs(x)+1)-log(abs(y)+1))^2, na.rm=TRUE))#
+  }#
+  rmsle <- apply(.thisForecastMatrix, 2, .rmsle, y=.thisOutcome)#
+#
+  ## mean absolute percentage error#
+  mape <- colMeans(.ape, na.rm=TRUE)*100#
+#
+  ##median absolute percentage errro#
+  meape <-  apply(.ape, 2, quantile, prob=.5, na.rm=TRUE)*100#
+#
+  ## median relative absolute error#
+  .eStar <- .thisOutcome-.thisBaseline#
+  .e <- .thisOutcome-.thisForecastMatrix#
+#
+  mrae <- apply(abs(.e/.eStar), 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## percent worse#
+  pw <- colMeans(abs(.e)>abs(.eStar), na.rm =TRUE)*100#
+  out <- cbind(mae, rmse, mad, rmsle, mape, meape, mrae, pw)#
+  return(out)#
+}#
+data=ud4#
+.lagAmount=4#
+.lag <-c(rep(NA, .lagAmount), data[1:(nrow(data)-.lagAmount),2])#
+names(.lag) <- rownames(data)#
+.modelNames <- colnames(thisSweep2)[-c(1:2)]#
+.ensemblePred1 <- thisSweep1$EBMA#
+.ensemblePred2 <- thisSweep2$EBMA#
+.ensemblePred3 <- thisSweep3$EBMA#
+.ensemblePred4 <- thisSweep4$EBMA#
+.theseRows <- as.character(thisSweep2$row)#
+.modelPreds <- data[.theseRows,.modelNames]#
+.modelWeights <- thisSweep2[,-c(1:2)]#
+.outcome <- data[.theseRows, 2]#
+.lag <- .lag[.theseRows]#
+.nrow=dim(.modelPreds)[1]; .ncol=dim(.modelPreds)[2]#
+modelOut <- modelFits(.outcome, .modelPreds, .lag)#
+### Table 5#
+.mean <- rowMeans(data[.theseRows,-c(1:3)], na.rm=TRUE) # an alternate metric#
+.median <- apply(data[.theseRows,-c(1:3)], 1, quantile, probs=.5, na.rm=TRUE)#
+.green <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$greenbook#
+.time <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$forecast.year.quarter#
+#
+all <- cbind(.ensemblePred1, .ensemblePred2, .ensemblePred3, .ensemblePred4, .mean, .median, .green)#
+all <- all[!is.na(.green),]#
+.redOut <- .outcome[!is.na(.green)]#
+.redLag <- .lag[!is.na(.green)]#
+.outTable <- modelFits(.redOut, all, .redLag)#
+xtable(.outTable)#
+.outTable
+## Now I need to calculate similar stats for the EBMA, but for the correct observations#
+.ensemblePredMatrix <- matrix(.ensemblePred2, nrow=nrow(.modelPreds), ncol=ncol(.modelPreds))#
+.ensemblePredMatrix[is.na(.modelPreds)] <- NA#
+ensembleOut <- modelFits(.outcome, .ensemblePredMatrix, .lag)#
+#
+## Total number of forecasts for models we are comparing ourselves with#
+count <- colSums(!is.na(.modelPreds))#
+length(count) # total number of models included#
+#
+### For model comparison table#
+pct_better<-rowMeans((modelOut-ensembleOut)>=0)*100#
+rownames<-seq(1,length(count))#
+for_table<-as.data.frame(cbind(count,pct_better))#
+#save(for_table, file="for_table.RData")#
+#load("for_table.RData")#
+cell_025_010<-sum(ifelse(for_table$count <11 & for_table$pct_better<26,1,0))#
+cell_2650_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better<26,1,0))#
+cell_2650_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_1130<-sum(ifelse(for_table$count >10 & for_table$count<31 &for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better<26,1,0))#
+cell_2650_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_3160<-sum(ifelse(for_table$count >30 &for_table$count<61  & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_61<-sum(ifelse(for_table$count >60 & for_table$pct_better<26,1,0))#
+cell_2650_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+mat<-matrix(ncol=4,nrow=4,c(cell_76100_010, cell_5175_010, cell_2650_010, cell_025_010, cell_76100_1130, cell_5175_1130, cell_2650_1130, cell_025_1130, cell_76100_3160, cell_5175_3160, cell_2650_3160, cell_025_3160, cell_76100_61, cell_5175_61, cell_2650_61, cell_025_61),byrow=F)#
+all<-sum(mat)#
+sum(mat)#
+colSums(mat)#
+matOut <- rbind(mat, colSums(mat))#
+for(i in 1:4){#
+matOut[i,] <-  matOut[i,]/matOut[5,]#
+}
+xtable(matOut)
+thisSweep1<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=.00, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep2<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=.05, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep3<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=.10, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep4<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=1, .parallel=TRUE,  .imp=FALSE, data=ud4)
+modelFits <- function(.thisOutcome, .thisForecastMatrix, .thisBaseline){#
+  .absErr <- abs(.thisForecastMatrix-.thisOutcome)#
+  .sqrErr <- .absErr^2#
+  .ape <- .absErr/abs(.thisOutcome) # absolute percent error#
+#
+  ## Mean absolute errror#
+  mae <- colMeans(.absErr, na.rm=TRUE)#
+#
+  ## Root mean squared error#
+  rmse <-  sqrt(colMeans(.sqrErr, na.rm=TRUE))#
+#
+  ## Median absolute deviation#
+  mad <- apply(.absErr, 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## Root mean Squaqred logarithmic error#
+  .rmsle <- function(x, y){#
+    sqrt(mean((log(abs(x)+1)-log(abs(y)+1))^2, na.rm=TRUE))#
+  }#
+  rmsle <- apply(.thisForecastMatrix, 2, .rmsle, y=.thisOutcome)#
+#
+  ## mean absolute percentage error#
+  mape <- colMeans(.ape, na.rm=TRUE)*100#
+#
+  ##median absolute percentage errro#
+  meape <-  apply(.ape, 2, quantile, prob=.5, na.rm=TRUE)*100#
+#
+  ## median relative absolute error#
+  .eStar <- .thisOutcome-.thisBaseline#
+  .e <- .thisOutcome-.thisForecastMatrix#
+#
+  mrae <- apply(abs(.e/.eStar), 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## percent worse#
+  pw <- colMeans(abs(.e)>abs(.eStar), na.rm =TRUE)*100#
+  out <- cbind(mae, rmse, mad, rmsle, mape, meape, mrae, pw)#
+  return(out)#
+}#
+data=ud4#
+.lagAmount=4#
+.lag <-c(rep(NA, .lagAmount), data[1:(nrow(data)-.lagAmount),2])#
+names(.lag) <- rownames(data)#
+.modelNames <- colnames(thisSweep2)[-c(1:2)]#
+.ensemblePred1 <- thisSweep1$EBMA#
+.ensemblePred2 <- thisSweep2$EBMA#
+.ensemblePred3 <- thisSweep3$EBMA#
+.ensemblePred4 <- thisSweep4$EBMA#
+.theseRows <- as.character(thisSweep2$row)#
+.modelPreds <- data[.theseRows,.modelNames]#
+.modelWeights <- thisSweep2[,-c(1:2)]#
+.outcome <- data[.theseRows, 2]#
+.lag <- .lag[.theseRows]#
+.nrow=dim(.modelPreds)[1]; .ncol=dim(.modelPreds)[2]#
+modelOut <- modelFits(.outcome, .modelPreds, .lag)#
+### Table 5#
+.mean <- rowMeans(data[.theseRows,-c(1:3)], na.rm=TRUE) # an alternate metric#
+.median <- apply(data[.theseRows,-c(1:3)], 1, quantile, probs=.5, na.rm=TRUE)#
+.green <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$greenbook#
+.time <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$forecast.year.quarter#
+#
+all <- cbind(.ensemblePred1, .ensemblePred2, .ensemblePred3, .ensemblePred4, .mean, .median, .green)#
+all <- all[!is.na(.green),]#
+.redOut <- .outcome[!is.na(.green)]#
+.redLag <- .lag[!is.na(.green)]#
+.outTable <- modelFits(.redOut, all, .redLag)#
+xtable(.outTable)#
+.outTable#
+## Now I need to calculate similar stats for the EBMA, but for the correct observations#
+.ensemblePredMatrix <- matrix(.ensemblePred2, nrow=nrow(.modelPreds), ncol=ncol(.modelPreds))#
+.ensemblePredMatrix[is.na(.modelPreds)] <- NA#
+ensembleOut <- modelFits(.outcome, .ensemblePredMatrix, .lag)#
+#
+## Total number of forecasts for models we are comparing ourselves with#
+count <- colSums(!is.na(.modelPreds))#
+length(count) # total number of models included#
+#
+### For model comparison table#
+pct_better<-rowMeans((modelOut-ensembleOut)>=0)*100#
+rownames<-seq(1,length(count))#
+for_table<-as.data.frame(cbind(count,pct_better))#
+#save(for_table, file="for_table.RData")#
+#load("for_table.RData")#
+cell_025_010<-sum(ifelse(for_table$count <11 & for_table$pct_better<26,1,0))#
+cell_2650_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better<26,1,0))#
+cell_2650_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_1130<-sum(ifelse(for_table$count >10 & for_table$count<31 &for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better<26,1,0))#
+cell_2650_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_3160<-sum(ifelse(for_table$count >30 &for_table$count<61  & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_61<-sum(ifelse(for_table$count >60 & for_table$pct_better<26,1,0))#
+cell_2650_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+mat<-matrix(ncol=4,nrow=4,c(cell_76100_010, cell_5175_010, cell_2650_010, cell_025_010, cell_76100_1130, cell_5175_1130, cell_2650_1130, cell_025_1130, cell_76100_3160, cell_5175_3160, cell_2650_3160, cell_025_3160, cell_76100_61, cell_5175_61, cell_2650_61, cell_025_61),byrow=F)#
+all<-sum(mat)#
+sum(mat)#
+colSums(mat)#
+matOut <- rbind(mat, colSums(mat))#
+for(i in 1:4){#
+matOut[i,] <-  matOut[i,]/matOut[5,]#
+}#
+##### Table 6 in Paper#
+library(xtable)#
+xtable(matOut)
+ud <- read.csv("~/Dropbox/EBMA/MovedFromGithub/APSA_2012/Data/unemployment_data.csv", as.is=TRUE, header=TRUE, row.names=1)#
+#
+ud4 <- subset(ud, variable=="UNEMP6")#
+ud4 <- subset(ud4, forecast.year.quarter>1971.2)#
+ud4 <- ud4[rowMeans(is.na(ud4[,-c(1:3)]))!=1,]#
+ud4Green <- ud4[,c("forecast.year.quarter", "greenbook", "variable")]#
+ud4 <- ud4[,c(1,3,2,4:429)]#
+colnames(ud4)[430] <- "XGB"#
+#
+myTestFunction <- function(.windowSize=30, .minCal=15, .predYearQuarter="1980.1", .const=0, data=NULL, .imp=FALSE){#
+  .predThis <- which(data$forecast.year.quarter==.predYearQuarter)#
+  .theseRows <- (.predThis-.windowSize-1):(.predThis-1)#
+  .all <- length(.theseRows)#
+  .selector <- colSums(is.na(data[.theseRows,]))<=(.all-.minCal) & !is.na(data[.predThis,])#
+  .reduced <- data[.theseRows, .selector]#
+#
+   # this code takes out any row where we now have no forecasts#
+  .rowSelector <- !(rowMeans(is.na(.reduced[,-(1:3)]))==1)#
+  .reduced <- .reduced[.rowSelector,]#
+  .target <- data[.predThis, .selector]#
+#
+  .FD <- makeForecastData(.predCalibration=.reduced[,-c(1:3)]#
+                          ,.outcomeCalibration=.reduced[,2]#
+                          ,.predTest=.target[,-c(1:3)]#
+                          ,.outcomeTest=.target[,2]#
+                          ,.modelNames=colnames(.reduced[,-c(1:3)])#
+                          )#
+#
+  ensemble <- calibrateEnsemble(.forecastData=.FD, model="normal", useModelParams=FALSE, const=.const, predType="posteriorMedian")#
+  output <- matrix(c(as.numeric(rownames(data[.predThis,])), ensemble@predTest[1], as.numeric(ensemble@modelWeights)), nrow=1)#
+  output <- data.frame(output)#
+  colnames(output) <- c("row", "EBMA", ensemble@modelNames)#
+  output#
+}#
+#
+registerDoMC(cores=32)#
+thisSweep1<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=.00, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep2<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=.05, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep3<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=.10, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep4<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=1, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+modelFits <- function(.thisOutcome, .thisForecastMatrix, .thisBaseline){#
+  .absErr <- abs(.thisForecastMatrix-.thisOutcome)#
+  .sqrErr <- .absErr^2#
+  .ape <- .absErr/abs(.thisOutcome) # absolute percent error#
+#
+  ## Mean absolute errror#
+  mae <- colMeans(.absErr, na.rm=TRUE)#
+#
+  ## Root mean squared error#
+  rmse <-  sqrt(colMeans(.sqrErr, na.rm=TRUE))#
+#
+  ## Median absolute deviation#
+  mad <- apply(.absErr, 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## Root mean Squaqred logarithmic error#
+  .rmsle <- function(x, y){#
+    sqrt(mean((log(abs(x)+1)-log(abs(y)+1))^2, na.rm=TRUE))#
+  }#
+  rmsle <- apply(.thisForecastMatrix, 2, .rmsle, y=.thisOutcome)#
+#
+  ## mean absolute percentage error#
+  mape <- colMeans(.ape, na.rm=TRUE)*100#
+#
+  ##median absolute percentage errro#
+  meape <-  apply(.ape, 2, quantile, prob=.5, na.rm=TRUE)*100#
+#
+  ## median relative absolute error#
+  .eStar <- .thisOutcome-.thisBaseline#
+  .e <- .thisOutcome-.thisForecastMatrix#
+#
+  mrae <- apply(abs(.e/.eStar), 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## percent worse#
+  pw <- colMeans(abs(.e)>abs(.eStar), na.rm =TRUE)*100#
+  out <- cbind(mae, rmse, mad, rmsle, mape, meape, mrae, pw)#
+  return(out)#
+}#
+data=ud4#
+.lagAmount=4#
+.lag <-c(rep(NA, .lagAmount), data[1:(nrow(data)-.lagAmount),2])#
+names(.lag) <- rownames(data)#
+.modelNames <- colnames(thisSweep2)[-c(1:2)]#
+.ensemblePred1 <- thisSweep1$EBMA#
+.ensemblePred2 <- thisSweep2$EBMA#
+.ensemblePred3 <- thisSweep3$EBMA#
+.ensemblePred4 <- thisSweep4$EBMA#
+.theseRows <- as.character(thisSweep2$row)#
+.modelPreds <- data[.theseRows,.modelNames]#
+.modelWeights <- thisSweep2[,-c(1:2)]#
+.outcome <- data[.theseRows, 2]#
+.lag <- .lag[.theseRows]#
+.nrow=dim(.modelPreds)[1]; .ncol=dim(.modelPreds)[2]#
+modelOut <- modelFits(.outcome, .modelPreds, .lag)#
+### Table 5#
+.mean <- rowMeans(data[.theseRows,-c(1:3)], na.rm=TRUE) # an alternate metric#
+.median <- apply(data[.theseRows,-c(1:3)], 1, quantile, probs=.5, na.rm=TRUE)#
+.green <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$greenbook#
+.time <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$forecast.year.quarter#
+#
+all <- cbind(.ensemblePred1, .ensemblePred2, .ensemblePred3, .ensemblePred4, .mean, .median, .green)#
+all <- all[!is.na(.green),]#
+.redOut <- .outcome[!is.na(.green)]#
+.redLag <- .lag[!is.na(.green)]#
+.outTable <- modelFits(.redOut, all, .redLag)#
+xtable(.outTable)#
+.outTable#
+## Now I need to calculate similar stats for the EBMA, but for the correct observations#
+.ensemblePredMatrix <- matrix(.ensemblePred2, nrow=nrow(.modelPreds), ncol=ncol(.modelPreds))#
+.ensemblePredMatrix[is.na(.modelPreds)] <- NA#
+ensembleOut <- modelFits(.outcome, .ensemblePredMatrix, .lag)#
+#
+## Total number of forecasts for models we are comparing ourselves with#
+count <- colSums(!is.na(.modelPreds))#
+length(count) # total number of models included#
+#
+### For model comparison table#
+pct_better<-rowMeans((modelOut-ensembleOut)>=0)*100#
+rownames<-seq(1,length(count))#
+for_table<-as.data.frame(cbind(count,pct_better))#
+#save(for_table, file="for_table.RData")#
+#load("for_table.RData")#
+cell_025_010<-sum(ifelse(for_table$count <11 & for_table$pct_better<26,1,0))#
+cell_2650_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better<26,1,0))#
+cell_2650_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_1130<-sum(ifelse(for_table$count >10 & for_table$count<31 &for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better<26,1,0))#
+cell_2650_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_3160<-sum(ifelse(for_table$count >30 &for_table$count<61  & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_61<-sum(ifelse(for_table$count >60 & for_table$pct_better<26,1,0))#
+cell_2650_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+mat<-matrix(ncol=4,nrow=4,c(cell_76100_010, cell_5175_010, cell_2650_010, cell_025_010, cell_76100_1130, cell_5175_1130, cell_2650_1130, cell_025_1130, cell_76100_3160, cell_5175_3160, cell_2650_3160, cell_025_3160, cell_76100_61, cell_5175_61, cell_2650_61, cell_025_61),byrow=F)#
+all<-sum(mat)#
+sum(mat)#
+colSums(mat)#
+matOut <- rbind(mat, colSums(mat))#
+for(i in 1:4){#
+matOut[i,] <-  matOut[i,]/matOut[5,]#
+}#
+##### Table 6 in Paper#
+library(xtable)#
+xtable(matOut)
+rm(list=ls(all=TRUE))#
+library("multicore")#
+library("foreach")#
+library("doMC")#
+library(devtools)#
+library(roxygen2)#
+library(testthat)#
+library(EBMAforecast)#
+ud <- read.csv("~/Dropbox/EBMA/MovedFromGithub/APSA_2012/Data/unemployment_data.csv", as.is=TRUE, header=TRUE, row.names=1)#
+#
+ud4 <- subset(ud, variable=="UNEMP6")#
+ud4 <- subset(ud4, forecast.year.quarter>1971.2)#
+ud4 <- ud4[rowMeans(is.na(ud4[,-c(1:3)]))!=1,]#
+ud4Green <- ud4[,c("forecast.year.quarter", "greenbook", "variable")]#
+ud4 <- ud4[,c(1,3,2,4:430)]#
+colnames(ud4)[430] <- "XGB"#
+#
+myTestFunction <- function(.windowSize=30, .minCal=15, .predYearQuarter="1980.3", .const=0, data=NULL, .imp=FALSE){#
+  .predThis <- which(data$forecast.year.quarter==.predYearQuarter)#
+  .theseRows <- (.predThis-.windowSize-1):(.predThis-1)#
+  .all <- length(.theseRows)#
+  .selector <- colSums(is.na(data[.theseRows,]))<=(.all-.minCal) & !is.na(data[.predThis,])#
+  .reduced <- data[.theseRows, .selector]#
+#
+   # this code takes out any row where we now have no forecasts#
+  .rowSelector <- !(rowMeans(is.na(.reduced[,-(1:3)]))==1)#
+  .reduced <- .reduced[.rowSelector,]#
+  .target <- data[.predThis, .selector]#
+#
+  .FD <- makeForecastData(.predCalibration=.reduced[,-c(1:3)]#
+                          ,.outcomeCalibration=.reduced[,2]#
+                          ,.predTest=.target[,-c(1:3)]#
+                          ,.outcomeTest=.target[,2]#
+                          ,.modelNames=colnames(.reduced[,-c(1:3)])#
+                          )#
+#
+  ensemble <- calibrateEnsemble(.forecastData=.FD, model="normal", useModelParams=FALSE, const=.const, predType="posteriorMedian")#
+  output <- matrix(c(as.numeric(rownames(data[.predThis,])), ensemble@predTest[1], as.numeric(ensemble@modelWeights)), nrow=1)#
+  output <- data.frame(output)#
+  colnames(output) <- c("row", "EBMA", ensemble@modelNames)#
+  output#
+}#
+#
+registerDoMC(cores=4)#
+thisSweep1<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=.00, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep2<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=.05, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep3<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=.10, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep4<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=1, .parallel=TRUE,  .imp=FALSE, data=ud4)
+modelFits <- function(.thisOutcome, .thisForecastMatrix, .thisBaseline){#
+  .absErr <- abs(.thisForecastMatrix-.thisOutcome)#
+  .sqrErr <- .absErr^2#
+  .ape <- .absErr/abs(.thisOutcome) # absolute percent error#
+#
+  ## Mean absolute errror#
+  mae <- colMeans(.absErr, na.rm=TRUE)#
+#
+  ## Root mean squared error#
+  rmse <-  sqrt(colMeans(.sqrErr, na.rm=TRUE))#
+#
+  ## Median absolute deviation#
+  mad <- apply(.absErr, 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## Root mean Squaqred logarithmic error#
+  .rmsle <- function(x, y){#
+    sqrt(mean((log(abs(x)+1)-log(abs(y)+1))^2, na.rm=TRUE))#
+  }#
+  rmsle <- apply(.thisForecastMatrix, 2, .rmsle, y=.thisOutcome)#
+#
+  ## mean absolute percentage error#
+  mape <- colMeans(.ape, na.rm=TRUE)*100#
+#
+  ##median absolute percentage errro#
+  meape <-  apply(.ape, 2, quantile, prob=.5, na.rm=TRUE)*100#
+#
+  ## median relative absolute error#
+  .eStar <- .thisOutcome-.thisBaseline#
+  .e <- .thisOutcome-.thisForecastMatrix#
+#
+  mrae <- apply(abs(.e/.eStar), 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## percent worse#
+  pw <- colMeans(abs(.e)>abs(.eStar), na.rm =TRUE)*100#
+  out <- cbind(mae, rmse, mad, rmsle, mape, meape, mrae, pw)#
+  return(out)#
+}#
+data=ud4#
+.lagAmount=4#
+.lag <-c(rep(NA, .lagAmount), data[1:(nrow(data)-.lagAmount),2])#
+names(.lag) <- rownames(data)#
+.modelNames <- colnames(thisSweep2)[-c(1:2)]#
+.ensemblePred1 <- thisSweep1$EBMA#
+.ensemblePred2 <- thisSweep2$EBMA#
+.ensemblePred3 <- thisSweep3$EBMA#
+.ensemblePred4 <- thisSweep4$EBMA#
+.theseRows <- as.character(thisSweep2$row)#
+.modelPreds <- data[.theseRows,.modelNames]#
+.modelWeights <- thisSweep2[,-c(1:2)]#
+.outcome <- data[.theseRows, 2]#
+.lag <- .lag[.theseRows]#
+.nrow=dim(.modelPreds)[1]; .ncol=dim(.modelPreds)[2]#
+modelOut <- modelFits(.outcome, .modelPreds, .lag)#
+### Table 5#
+.mean <- rowMeans(data[.theseRows,-c(1:3)], na.rm=TRUE) # an alternate metric#
+.median <- apply(data[.theseRows,-c(1:3)], 1, quantile, probs=.5, na.rm=TRUE)#
+.green <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$greenbook#
+.time <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$forecast.year.quarter#
+#
+all <- cbind(.ensemblePred1, .ensemblePred2, .ensemblePred3, .ensemblePred4, .mean, .median, .green)#
+all <- all[!is.na(.green),]#
+.redOut <- .outcome[!is.na(.green)]#
+.redLag <- .lag[!is.na(.green)]#
+.outTable <- modelFits(.redOut, all, .redLag)#
+xtable(.outTable)#
+.outTable#
+## Now I need to calculate similar stats for the EBMA, but for the correct observations#
+.ensemblePredMatrix <- matrix(.ensemblePred2, nrow=nrow(.modelPreds), ncol=ncol(.modelPreds))#
+.ensemblePredMatrix[is.na(.modelPreds)] <- NA#
+ensembleOut <- modelFits(.outcome, .ensemblePredMatrix, .lag)#
+#
+## Total number of forecasts for models we are comparing ourselves with#
+count <- colSums(!is.na(.modelPreds))#
+length(count) # total number of models included#
+#
+### For model comparison table#
+pct_better<-rowMeans((modelOut-ensembleOut)>=0)*100#
+rownames<-seq(1,length(count))#
+for_table<-as.data.frame(cbind(count,pct_better))#
+#save(for_table, file="for_table.RData")#
+#load("for_table.RData")#
+cell_025_010<-sum(ifelse(for_table$count <11 & for_table$pct_better<26,1,0))#
+cell_2650_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better<26,1,0))#
+cell_2650_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_1130<-sum(ifelse(for_table$count >10 & for_table$count<31 &for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better<26,1,0))#
+cell_2650_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_3160<-sum(ifelse(for_table$count >30 &for_table$count<61  & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_61<-sum(ifelse(for_table$count >60 & for_table$pct_better<26,1,0))#
+cell_2650_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+mat<-matrix(ncol=4,nrow=4,c(cell_76100_010, cell_5175_010, cell_2650_010, cell_025_010, cell_76100_1130, cell_5175_1130, cell_2650_1130, cell_025_1130, cell_76100_3160, cell_5175_3160, cell_2650_3160, cell_025_3160, cell_76100_61, cell_5175_61, cell_2650_61, cell_025_61),byrow=F)#
+all<-sum(mat)#
+sum(mat)#
+colSums(mat)#
+matOut <- rbind(mat, colSums(mat))#
+for(i in 1:4){#
+matOut[i,] <-  matOut[i,]/matOut[5,]#
+}#
+##### Table 6 in Paper#
+library(xtable)#
+xtable(matOut)
+myTestFunction <- function(.windowSize=30, .minCal=15, .predYearQuarter="1980.3", .const=0, data=NULL, .imp=FALSE){#
+  .predThis <- which(data$forecast.year.quarter==.predYearQuarter)#
+  .theseRows <- (.predThis-.windowSize-1):(.predThis-1)#
+  .all <- length(.theseRows)#
+  .selector <- colSums(is.na(data[.theseRows,]))<(.all-.minCal) & !is.na(data[.predThis,])#
+  .reduced <- data[.theseRows, .selector]#
+#
+   # this code takes out any row where we now have no forecasts#
+  .rowSelector <- !(rowMeans(is.na(.reduced[,-(1:3)]))==1)#
+  .reduced <- .reduced[.rowSelector,]#
+  .target <- data[.predThis, .selector]#
+#
+  .FD <- makeForecastData(.predCalibration=.reduced[,-c(1:3)]#
+                          ,.outcomeCalibration=.reduced[,2]#
+                          ,.predTest=.target[,-c(1:3)]#
+                          ,.outcomeTest=.target[,2]#
+                          ,.modelNames=colnames(.reduced[,-c(1:3)])#
+                          )#
+#
+  ensemble <- calibrateEnsemble(.forecastData=.FD, model="normal", useModelParams=FALSE, const=.const, predType="posteriorMedian")#
+  output <- matrix(c(as.numeric(rownames(data[.predThis,])), ensemble@predTest[1], as.numeric(ensemble@modelWeights)), nrow=1)#
+  output <- data.frame(output)#
+  colnames(output) <- c("row", "EBMA", ensemble@modelNames)#
+  output#
+}#
+#
+registerDoMC(cores=4)#
+thisSweep1<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=.00, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep2<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=.05, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep3<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=.10, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep4<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=10, .minCal=5, .const=1, .parallel=TRUE,  .imp=FALSE, data=ud4)
+modelFits <- function(.thisOutcome, .thisForecastMatrix, .thisBaseline){#
+  .absErr <- abs(.thisForecastMatrix-.thisOutcome)#
+  .sqrErr <- .absErr^2#
+  .ape <- .absErr/abs(.thisOutcome) # absolute percent error#
+#
+  ## Mean absolute errror#
+  mae <- colMeans(.absErr, na.rm=TRUE)#
+#
+  ## Root mean squared error#
+  rmse <-  sqrt(colMeans(.sqrErr, na.rm=TRUE))#
+#
+  ## Median absolute deviation#
+  mad <- apply(.absErr, 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## Root mean Squaqred logarithmic error#
+  .rmsle <- function(x, y){#
+    sqrt(mean((log(abs(x)+1)-log(abs(y)+1))^2, na.rm=TRUE))#
+  }#
+  rmsle <- apply(.thisForecastMatrix, 2, .rmsle, y=.thisOutcome)#
+#
+  ## mean absolute percentage error#
+  mape <- colMeans(.ape, na.rm=TRUE)*100#
+#
+  ##median absolute percentage errro#
+  meape <-  apply(.ape, 2, quantile, prob=.5, na.rm=TRUE)*100#
+#
+  ## median relative absolute error#
+  .eStar <- .thisOutcome-.thisBaseline#
+  .e <- .thisOutcome-.thisForecastMatrix#
+#
+  mrae <- apply(abs(.e/.eStar), 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## percent worse#
+  pw <- colMeans(abs(.e)>abs(.eStar), na.rm =TRUE)*100#
+  out <- cbind(mae, rmse, mad, rmsle, mape, meape, mrae, pw)#
+  return(out)#
+}#
+data=ud4#
+.lagAmount=4#
+.lag <-c(rep(NA, .lagAmount), data[1:(nrow(data)-.lagAmount),2])#
+names(.lag) <- rownames(data)#
+.modelNames <- colnames(thisSweep2)[-c(1:2)]#
+.ensemblePred1 <- thisSweep1$EBMA#
+.ensemblePred2 <- thisSweep2$EBMA#
+.ensemblePred3 <- thisSweep3$EBMA#
+.ensemblePred4 <- thisSweep4$EBMA#
+.theseRows <- as.character(thisSweep2$row)#
+.modelPreds <- data[.theseRows,.modelNames]#
+.modelWeights <- thisSweep2[,-c(1:2)]#
+.outcome <- data[.theseRows, 2]#
+.lag <- .lag[.theseRows]#
+.nrow=dim(.modelPreds)[1]; .ncol=dim(.modelPreds)[2]#
+modelOut <- modelFits(.outcome, .modelPreds, .lag)#
+### Table 5#
+.mean <- rowMeans(data[.theseRows,-c(1:3)], na.rm=TRUE) # an alternate metric#
+.median <- apply(data[.theseRows,-c(1:3)], 1, quantile, probs=.5, na.rm=TRUE)#
+.green <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$greenbook#
+.time <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$forecast.year.quarter#
+#
+all <- cbind(.ensemblePred1, .ensemblePred2, .ensemblePred3, .ensemblePred4, .mean, .median, .green)#
+all <- all[!is.na(.green),]#
+.redOut <- .outcome[!is.na(.green)]#
+.redLag <- .lag[!is.na(.green)]#
+.outTable <- modelFits(.redOut, all, .redLag)#
+xtable(.outTable)#
+.outTable#
+## Now I need to calculate similar stats for the EBMA, but for the correct observations#
+.ensemblePredMatrix <- matrix(.ensemblePred2, nrow=nrow(.modelPreds), ncol=ncol(.modelPreds))#
+.ensemblePredMatrix[is.na(.modelPreds)] <- NA#
+ensembleOut <- modelFits(.outcome, .ensemblePredMatrix, .lag)#
+#
+## Total number of forecasts for models we are comparing ourselves with#
+count <- colSums(!is.na(.modelPreds))#
+length(count) # total number of models included#
+#
+### For model comparison table#
+pct_better<-rowMeans((modelOut-ensembleOut)>=0)*100#
+rownames<-seq(1,length(count))#
+for_table<-as.data.frame(cbind(count,pct_better))#
+#save(for_table, file="for_table.RData")#
+#load("for_table.RData")#
+cell_025_010<-sum(ifelse(for_table$count <11 & for_table$pct_better<26,1,0))#
+cell_2650_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better<26,1,0))#
+cell_2650_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_1130<-sum(ifelse(for_table$count >10 & for_table$count<31 &for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better<26,1,0))#
+cell_2650_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_3160<-sum(ifelse(for_table$count >30 &for_table$count<61  & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_61<-sum(ifelse(for_table$count >60 & for_table$pct_better<26,1,0))#
+cell_2650_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+mat<-matrix(ncol=4,nrow=4,c(cell_76100_010, cell_5175_010, cell_2650_010, cell_025_010, cell_76100_1130, cell_5175_1130, cell_2650_1130, cell_025_1130, cell_76100_3160, cell_5175_3160, cell_2650_3160, cell_025_3160, cell_76100_61, cell_5175_61, cell_2650_61, cell_025_61),byrow=F)#
+all<-sum(mat)#
+sum(mat)#
+colSums(mat)#
+matOut <- rbind(mat, colSums(mat))#
+for(i in 1:4){#
+matOut[i,] <-  matOut[i,]/matOut[5,]#
+}#
+##### Table 6 in Paper#
+library(xtable)#
+xtable(matOut)
+rm(list=ls(all=TRUE))#
+library("multicore")#
+library("foreach")#
+library("doMC")#
+library(devtools)#
+library(roxygen2)#
+library(testthat)#
+ud <- read.csv("~/Dropbox/EBMA/MovedFromGithub/APSA_2012/Data/unemployment_data.csv", as.is=TRUE, header=TRUE, row.names=1)#
+#
+ud4 <- subset(ud, variable=="UNEMP6")#
+ud4 <- subset(ud4, forecast.year.quarter>1971.2)#
+ud4 <- ud4[rowMeans(is.na(ud4[,-c(1:3)]))!=1,]#
+ud4Green <- ud4[,c("forecast.year.quarter", "greenbook", "variable")]#
+ud4 <- ud4[,c(1,3,2,4:430)]#
+colnames(ud4)[430] <- "XGB"#
+#
+myTestFunction <- function(.windowSize=30, .minCal=15, .predYearQuarter="1980.1", .const=0, data=NULL, .imp=FALSE){#
+  .predThis <- which(data$forecast.year.quarter==.predYearQuarter)#
+  .theseRows <- (.predThis-.windowSize-1):(.predThis-1)#
+  .all <- length(.theseRows)#
+  .selector <- colSums(is.na(data[.theseRows,]))<=(.all-.minCal) & !is.na(data[.predThis,])#
+  .reduced <- data[.theseRows, .selector]#
+#
+   # this code takes out any row where we now have no forecasts#
+  .rowSelector <- !(rowMeans(is.na(.reduced[,-(1:3)]))==1)#
+  .reduced <- .reduced[.rowSelector,]#
+  .target <- data[.predThis, .selector]#
+#
+  .FD <- makeForecastData(.predCalibration=.reduced[,-c(1:3)]#
+                          ,.outcomeCalibration=.reduced[,2]#
+                          ,.predTest=.target[,-c(1:3)]#
+                          ,.outcomeTest=.target[,2]#
+                          ,.modelNames=colnames(.reduced[,-c(1:3)])#
+                          )#
+#
+  ensemble <- calibrateEnsemble(.forecastData=.FD, model="normal", useModelParams=FALSE, const=.const, predType="posteriorMedian")#
+  output <- matrix(c(as.numeric(rownames(data[.predThis,])), ensemble@predTest[1], as.numeric(ensemble@modelWeights)), nrow=1)#
+  output <- data.frame(output)#
+  colnames(output) <- c("row", "EBMA", ensemble@modelNames)#
+  output#
+}#
+#
+registerDoMC(cores=32)#
+thisSweep1<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=8, .minCal=4, .const=.00, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep2<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=8, .minCal=4, .const=.05, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep3<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=8, .minCal=4, .const=.10, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep4<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=8, .minCal=4, .const=1, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+modelFits <- function(.thisOutcome, .thisForecastMatrix, .thisBaseline){#
+  .absErr <- abs(.thisForecastMatrix-.thisOutcome)#
+  .sqrErr <- .absErr^2#
+  .ape <- .absErr/abs(.thisOutcome) # absolute percent error#
+#
+  ## Mean absolute errror#
+  mae <- colMeans(.absErr, na.rm=TRUE)#
+#
+  ## Root mean squared error#
+  rmse <-  sqrt(colMeans(.sqrErr, na.rm=TRUE))#
+#
+  ## Median absolute deviation#
+  mad <- apply(.absErr, 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## Root mean Squaqred logarithmic error#
+  .rmsle <- function(x, y){#
+    sqrt(mean((log(abs(x)+1)-log(abs(y)+1))^2, na.rm=TRUE))#
+  }#
+  rmsle <- apply(.thisForecastMatrix, 2, .rmsle, y=.thisOutcome)#
+#
+  ## mean absolute percentage error#
+  mape <- colMeans(.ape, na.rm=TRUE)*100#
+#
+  ##median absolute percentage errro#
+  meape <-  apply(.ape, 2, quantile, prob=.5, na.rm=TRUE)*100#
+#
+  ## median relative absolute error#
+  .eStar <- .thisOutcome-.thisBaseline#
+  .e <- .thisOutcome-.thisForecastMatrix#
+#
+  mrae <- apply(abs(.e/.eStar), 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  ## percent worse#
+  pw <- colMeans(abs(.e)>abs(.eStar), na.rm =TRUE)*100#
+  out <- cbind(mae, rmse, mad, rmsle, mape, meape, mrae, pw)#
+  return(out)#
+}#
+data=ud4#
+.lagAmount=4#
+.lag <-c(rep(NA, .lagAmount), data[1:(nrow(data)-.lagAmount),2])#
+names(.lag) <- rownames(data)#
+.modelNames <- colnames(thisSweep2)[-c(1:2)]#
+.ensemblePred1 <- thisSweep1$EBMA#
+.ensemblePred2 <- thisSweep2$EBMA#
+.ensemblePred3 <- thisSweep3$EBMA#
+.ensemblePred4 <- thisSweep4$EBMA#
+.theseRows <- as.character(thisSweep2$row)#
+.modelPreds <- data[.theseRows,.modelNames]#
+.modelWeights <- thisSweep2[,-c(1:2)]#
+.outcome <- data[.theseRows, 2]#
+.lag <- .lag[.theseRows]#
+.nrow=dim(.modelPreds)[1]; .ncol=dim(.modelPreds)[2]#
+modelOut <- modelFits(.outcome, .modelPreds, .lag)#
+### Table 5#
+.mean <- rowMeans(data[.theseRows,-c(1:3)], na.rm=TRUE) # an alternate metric#
+.median <- apply(data[.theseRows,-c(1:3)], 1, quantile, probs=.5, na.rm=TRUE)#
+.green <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$greenbook#
+.time <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$forecast.year.quarter#
+#
+all <- cbind(.ensemblePred1, .ensemblePred2, .ensemblePred3, .ensemblePred4, .mean, .median, .green)#
+all <- all[!is.na(.green),]#
+.redOut <- .outcome[!is.na(.green)]#
+.redLag <- .lag[!is.na(.green)]#
+.outTable <- modelFits(.redOut, all, .redLag)#
+xtable(.outTable)#
+.outTable#
+## Now I need to calculate similar stats for the EBMA, but for the correct observations#
+.ensemblePredMatrix <- matrix(.ensemblePred2, nrow=nrow(.modelPreds), ncol=ncol(.modelPreds))#
+.ensemblePredMatrix[is.na(.modelPreds)] <- NA#
+ensembleOut <- modelFits(.outcome, .ensemblePredMatrix, .lag)#
+#
+## Total number of forecasts for models we are comparing ourselves with#
+count <- colSums(!is.na(.modelPreds))#
+length(count) # total number of models included#
+#
+### For model comparison table#
+pct_better<-rowMeans((modelOut-ensembleOut)>=0)*100#
+rownames<-seq(1,length(count))#
+for_table<-as.data.frame(cbind(count,pct_better))#
+#save(for_table, file="for_table.RData")#
+#load("for_table.RData")#
+cell_025_010<-sum(ifelse(for_table$count <11 & for_table$pct_better<26,1,0))#
+cell_2650_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better<26,1,0))#
+cell_2650_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_1130<-sum(ifelse(for_table$count >10 & for_table$count<31 &for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better<26,1,0))#
+cell_2650_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_3160<-sum(ifelse(for_table$count >30 &for_table$count<61  & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_61<-sum(ifelse(for_table$count >60 & for_table$pct_better<26,1,0))#
+cell_2650_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+mat<-matrix(ncol=4,nrow=4,c(cell_76100_010, cell_5175_010, cell_2650_010, cell_025_010, cell_76100_1130, cell_5175_1130, cell_2650_1130, cell_025_1130, cell_76100_3160, cell_5175_3160, cell_2650_3160, cell_025_3160, cell_76100_61, cell_5175_61, cell_2650_61, cell_025_61),byrow=F)#
+all<-sum(mat)#
+sum(mat)#
+colSums(mat)#
+matOut <- rbind(mat, colSums(mat))#
+for(i in 1:4){#
+matOut[i,] <-  matOut[i,]/matOut[5,]#
+}#
+##### Table 6 in Paper#
+library(xtable)#
+xtable(matOut)
+all <- cbind(.ensemblePred1, .ensemblePred2, .ensemblePred3, .ensemblePred4,.green, .mean, .median)
+all <- all[!is.na(.green),]
+.redOut <- .outcome[!is.na(.green)]
+all <- cbind(.ensemblePred1, .ensemblePred2, .ensemblePred3, .ensemblePred4,.green, .mean, .median)#
+all <- all[!is.na(.green),]#
+.redOut <- .outcome[!is.na(.green)]#
+.redLag <- .lag[!is.na(.green)]#
+.outTable <- modelFits(.redOut, all, .redLag)#
+xtable(.outTable)#
+.outTable
+par(mar=c(2,2,.5,2), mfrow=c(1,1), mgp=c(1,0.25,0), tcl=0)#
+mycols <- c("gray90",rgb(241,163,64,maxColorValue=255), rgb(230, 97, 1,maxColorValue=255), rgb(35, 132, 67,maxColorValue=255))#
+mywidths <- c(10,8,4,4)#
+plot(.time, .redOut, type="l", lwd=mywidths[1], ylab="", xlab="", main="", bty="n", las=1,col=mycols[1],xlim=c(1981,2008),axes=F)#
+myyears<-c("1980","1985","1990","1995","2000","2005","2008")#
+axis(1,at=c(1980,1985,1990,1995,2000,2005,2008),labels=myyears,cex.axis=.9)#
+colnames(all)#
+for(i in 1:3){#
+  this <- c(2, 6, 7)#
+  lines(.time, all[,this[i]], col=mycols[i+1], lty=1, lwd=mywidths[i+1])#
+}#
+mytxtcol<-mycols#
+mytxtcol[1]<-"black"#
+legend(1998, 10, c("Observed", "EBMA", "Median", "Green Book"), col=mycols, lty=c(1),bty="n",lwd=5,text.col=mytxtcol)
+#####################################################################
+#         Replication of Unemployment Application                  ##
+#            Montgomery, Hollenbach, Ward                          ##
+#         Calibrating ensemle forecasting models                   ##
+#           sparse data in the social sciences                     ##
+#		   International Journal of Forecasting                    #       #
+#                     2014                                         ##
+#                                                                  ##
+#####################################################################
+rm(list=ls(all=TRUE))#
+library("multicore")#
+library("foreach")#
+library("doMC")#
+library(devtools)#
+library(roxygen2)#
+library(testthat)#
+#
+library(EBMAforecast) ### version 0.42 for exact results#
+#
+### set working directory to appropriate directory#
+setwd("~/Dropbox/EBMA/IJF_Replication/")#
+#read data of unemployment forecasts#
+ud <- read.csv("unemployment_data.csv", as.is=TRUE, header=TRUE, row.names=1)#
+#
+### keep only forecasts four quarters into the future#
+ud4 <- subset(ud, variable=="UNEMP6")#
+ud4 <- subset(ud4, forecast.year.quarter>1971.2)
+ud4[rowMeans(is.na(ud4[,-c(1:3)]))!=1,]
+ud4[,-c(1:3)]
+is.na(ud4[,-c(1:3)]))!=1
+is.na(ud4[,-c(1:3)]))
+is.na(ud4[,-c(1:3)])
+ud4.1 <- ud4[all(is.na(ud4[,-c(1:3)]))==FALSE,]
+ud4 <- ud4[rowMeans(is.na(ud4[,-c(1:3)]))!=1,]
+ud4.1 == ud4
+dim(ud4.1)
+dim(ud4)
+ud4 <- ud4[all(is.na(ud4[,-c(1:3)]))==FALSE,]
+ud4 <- ud4[,c(1,3,2,4:430)]
+ud4
+dim(ud4)
+### keep only forecasts four quarters into the future, starting in second quarter of 1972 and exclude oberservations with#
+ud4 <- subset(ud, variable=="UNEMP6")#
+ud4 <- subset(ud4, forecast.year.quarter>1971.2)#
+ud4 <- ud4[all(is.na(ud4[,-c(1:3)]))==FALSE,]#
+#ud4 <- ud4[rowMeans(is.na(ud4[,-c(1:3)]))!=1,]
+myTestFunction <- function(.windowSize=30, .minCal=15, .predYearQuarter="1980.1", .const=0, data=NULL, .imp=FALSE){#
+  .predThis <- which(data$forecast.year.quarter==.predYearQuarter)#
+  .theseRows <- (.predThis-.windowSize-1):(.predThis-1)#
+  .all <- length(.theseRows)#
+  .selector <- colSums(is.na(data[.theseRows,]))<=(.all-.minCal) & !is.na(data[.predThis,])#
+  .reduced <- data[.theseRows, .selector]#
+#
+   # this code takes out any row where we now have no forecasts#
+  .rowSelector <- !(rowMeans(is.na(.reduced[,-(1:3)]))==1)#
+  .reduced <- .reduced[.rowSelector,]#
+  .target <- data[.predThis, .selector]#
+#
+  .FD <- makeForecastData(.predCalibration=.reduced[,-c(1:3)]#
+                          ,.outcomeCalibration=.reduced[,2]#
+                          ,.predTest=.target[,-c(1:3)]#
+                          ,.outcomeTest=.target[,2]#
+                          ,.modelNames=colnames(.reduced[,-c(1:3)])#
+                          )#
+#
+  ensemble <- calibrateEnsemble(.forecastData=.FD, model="normal", useModelParams=FALSE, const=.const, predType="posteriorMedian")#
+  output <- matrix(c(as.numeric(rownames(data[.predThis,])), ensemble@predTest[1], as.numeric(ensemble@modelWeights)), nrow=1)#
+  output <- data.frame(output)#
+  colnames(output) <- c("row", "EBMA", ensemble@modelNames)#
+  output#
+}#
+#
+registerDoMC(cores=32)#
+thisSweep1<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=8, .minCal=4, .const=.00, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep2<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=8, .minCal=4, .const=.05, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep3<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=8, .minCal=4, .const=.10, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep4<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=8, .minCal=4, .const=1, .parallel=TRUE,  .imp=FALSE, data=ud4)
+####
+ud4Green <- ud4[,c("forecast.year.quarter", "greenbook", "variable")]#
+ud4 <- ud4[,c(1,3,2,4:430)]#
+colnames(ud4)[430] <- "XGB"#
+#
+myTestFunction <- function(.windowSize=30, .minCal=15, .predYearQuarter="1980.1", .const=0, data=NULL, .imp=FALSE){#
+  .predThis <- which(data$forecast.year.quarter==.predYearQuarter)#
+  .theseRows <- (.predThis-.windowSize-1):(.predThis-1)#
+  .all <- length(.theseRows)#
+  .selector <- colSums(is.na(data[.theseRows,]))<=(.all-.minCal) & !is.na(data[.predThis,])#
+  .reduced <- data[.theseRows, .selector]#
+#
+   # this code takes out any row where we now have no forecasts#
+  .rowSelector <- !(rowMeans(is.na(.reduced[,-(1:3)]))==1)#
+  .reduced <- .reduced[.rowSelector,]#
+  .target <- data[.predThis, .selector]#
+#
+  .FD <- makeForecastData(.predCalibration=.reduced[,-c(1:3)]#
+                          ,.outcomeCalibration=.reduced[,2]#
+                          ,.predTest=.target[,-c(1:3)]#
+                          ,.outcomeTest=.target[,2]#
+                          ,.modelNames=colnames(.reduced[,-c(1:3)])#
+                          )#
+#
+  ensemble <- calibrateEnsemble(.forecastData=.FD, model="normal", useModelParams=FALSE, const=.const, predType="posteriorMedian")#
+  output <- matrix(c(as.numeric(rownames(data[.predThis,])), ensemble@predTest[1], as.numeric(ensemble@modelWeights)), nrow=1)#
+  output <- data.frame(output)#
+  colnames(output) <- c("row", "EBMA", ensemble@modelNames)#
+  output#
+}#
+#
+registerDoMC(cores=32)#
+thisSweep1<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=8, .minCal=4, .const=.00, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep2<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=8, .minCal=4, .const=.05, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep3<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=8, .minCal=4, .const=.10, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep4<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=8, .minCal=4, .const=1, .parallel=TRUE,  .imp=FALSE, data=ud4)
+#####################################################################
+#         Replication of Unemployment Application                  ##
+#            Montgomery, Hollenbach, Ward                          ##
+#         Calibrating ensemle forecasting models                   ##
+#           sparse data in the social sciences                     ##
+#		   International Journal of Forecasting                    #       #
+#                     2014                                         ##
+#                                                                  ##
+#####################################################################
+rm(list=ls(all=TRUE))#
+library("multicore")#
+library("foreach")#
+library("doMC")#
+library(devtools)#
+library(roxygen2)#
+library(testthat)#
+#
+library(EBMAforecast) ### version 0.42 for exact results#
+#
+### set working directory to appropriate directory#
+setwd("~/Dropbox/EBMA/IJF_Replication/")#
+#read data of unemployment forecasts#
+ud <- read.csv("unemployment_data.csv", as.is=TRUE, header=TRUE, row.names=1)#
+#
+### keep only forecasts four quarters into the future, starting in second quarter of 1972 and exclude oberservations with#
+ud4 <- subset(ud, variable=="UNEMP6")#
+ud4 <- subset(ud4, forecast.year.quarter>1971.2)#
+ud4 <- ud4[all(is.na(ud4[,-c(1:3)]))==FALSE,]#
+#ud4 <- ud4[rowMeans(is.na(ud4[,-c(1:3)]))!=1,]
+colnames(ud4)[430] <- "XGB"
+myTestFunction <- function(.windowSize=30, .minCal=15, .predYearQuarter="1980.1", .const=0, data=NULL, .imp=FALSE){#
+  .predThis <- which(data$forecast.year.quarter==.predYearQuarter)#
+  .theseRows <- (.predThis-.windowSize-1):(.predThis-1)#
+  .all <- length(.theseRows)#
+  .selector <- colSums(is.na(data[.theseRows,]))<=(.all-.minCal) & !is.na(data[.predThis,])#
+  .reduced <- data[.theseRows, .selector]#
+#
+   # this code takes out any row where we now have no forecasts#
+  .rowSelector <- !(rowMeans(is.na(.reduced[,-(1:3)]))==1)#
+  .reduced <- .reduced[.rowSelector,]#
+  .target <- data[.predThis, .selector]#
+#
+  .FD <- makeForecastData(.predCalibration=.reduced[,-c(1:3)]#
+                          ,.outcomeCalibration=.reduced[,2]#
+                          ,.predTest=.target[,-c(1:3)]#
+                          ,.outcomeTest=.target[,2]#
+                          ,.modelNames=colnames(.reduced[,-c(1:3)])#
+                          )#
+#
+  ensemble <- calibrateEnsemble(.forecastData=.FD, model="normal", useModelParams=FALSE, const=.const, predType="posteriorMedian")#
+  output <- matrix(c(as.numeric(rownames(data[.predThis,])), ensemble@predTest[1], as.numeric(ensemble@modelWeights)), nrow=1)#
+  output <- data.frame(output)#
+  colnames(output) <- c("row", "EBMA", ensemble@modelNames)#
+  output#
+}#
+#
+registerDoMC(cores=4)#
+thisSweep1<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=8, .minCal=4, .const=.00, .parallel=TRUE,  .imp=FALSE, data=ud4)
+ud4 <- ud4[,c(1,3,2,4:430)]
+thisSweep1<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=8, .minCal=4, .const=.00, .parallel=TRUE,  .imp=FALSE, data=ud4)
+#####################################################################
+#         Replication of Unemployment Application                  ##
+#            Montgomery, Hollenbach, Ward                          ##
+#         Calibrating ensemle forecasting models                   ##
+#           sparse data in the social sciences                     ##
+#		   International Journal of Forecasting                    #       #
+#                     2014                                         ##
+#                                                                  ##
+#####################################################################
+rm(list=ls(all=TRUE))#
+library("multicore")#
+library("foreach")#
+library("doMC")#
+library(devtools)#
+library(roxygen2)#
+library(testthat)#
+#
+library(EBMAforecast) ### version 0.42 for exact results#
+#
+### set working directory to appropriate directory#
+setwd("~/Dropbox/EBMA/IJF_Replication/")#
+#read data of unemployment forecasts#
+ud <- read.csv("unemployment_data.csv", as.is=TRUE, header=TRUE, row.names=1)#
+#
+### keep only forecasts four quarters into the future, starting in second quarter of 1972 and exclude oberservations with#
+ud4 <- subset(ud, variable=="UNEMP6")#
+ud4 <- subset(ud4, forecast.year.quarter>1971.2)#
+ud4 <- ud4[all(is.na(ud4[,-c(1:3)]))==FALSE,]#
+#ud4 <- ud4[rowMeans(is.na(ud4[,-c(1:3)]))!=1,]#
+####
+ud4Green <- ud4[,c("forecast.year.quarter", "greenbook", "variable")]
+colnames(ud4)
+ud4 <- ud4[,c(1,3,2,4:430)]
+colnames(ud4)
+rm(list=ls(all=TRUE))#
+library("multicore")#
+library("foreach")#
+library("doMC")#
+library(devtools)#
+library(roxygen2)#
+library(testthat)#
+#
+library(EBMAforecast) ### version 0.42 for exact results#
+#
+### set working directory to appropriate directory#
+setwd("~/Dropbox/EBMA/IJF_Replication/")#
+#read data of unemployment forecasts#
+ud <- read.csv("unemployment_data.csv", as.is=TRUE, header=TRUE, row.names=1)#
+#
+### keep only forecasts four quarters into the future, starting in second quarter of 1972 and exclude oberservations with#
+ud4 <- subset(ud, variable=="UNEMP6")#
+ud4 <- subset(ud4, forecast.year.quarter>1971.2)#
+ud4 <- ud4[all(is.na(ud4[,-c(1:3)]))==FALSE,]#
+#ud4 <- ud4[rowMeans(is.na(ud4[,-c(1:3)]))!=1,]#
+####
+#ud4Green <- ud4[,c("forecast.year.quarter", "greenbook", "variable")]#
+#ud4 <- ud4[,c(1,3,2,4:430)]#
+#colnames(ud4)[430] <- "XGB"#
+#
+myTestFunction <- function(.windowSize=30, .minCal=15, .predYearQuarter="1980.1", .const=0, data=NULL, .imp=FALSE){#
+  .predThis <- which(data$forecast.year.quarter==.predYearQuarter)#
+  .theseRows <- (.predThis-.windowSize-1):(.predThis-1)#
+  .all <- length(.theseRows)#
+  .selector <- colSums(is.na(data[.theseRows,]))<=(.all-.minCal) & !is.na(data[.predThis,])#
+  .reduced <- data[.theseRows, .selector]#
+#
+   # this code takes out any row where we now have no forecasts#
+  .rowSelector <- !(rowMeans(is.na(.reduced[,-(1:3)]))==1)#
+  .reduced <- .reduced[.rowSelector,]#
+  .target <- data[.predThis, .selector]#
+#
+  .FD <- makeForecastData(.predCalibration=.reduced[,-c(1:3)]#
+                          ,.outcomeCalibration=.reduced[,3]#
+                          ,.predTest=.target[,-c(1:3)]#
+                          ,.outcomeTest=.target[,3]#
+                          ,.modelNames=colnames(.reduced[,-c(1:3)])#
+                          )#
+#
+  ensemble <- calibrateEnsemble(.forecastData=.FD, model="normal", useModelParams=FALSE, const=.const, predType="posteriorMedian")#
+  output <- matrix(c(as.numeric(rownames(data[.predThis,])), ensemble@predTest[1], as.numeric(ensemble@modelWeights)), nrow=1)#
+  output <- data.frame(output)#
+  colnames(output) <- c("row", "EBMA", ensemble@modelNames)#
+  output#
+}
+thisSweep1<- ldply(as.charac	ter(ud4[41:146,1]), myTestFunction, .windowSize=8, .minCal=4, .const=.00, .parallel=TRUE,  .imp=FALSE, data=ud4)
+thisSweep1<- ldply(as.character(ud4[41:146,1]), myTestFunction, .windowSize=8, .minCal=4, .const=.00, .parallel=TRUE,  .imp=FALSE, data=ud4)
+as.character(ud4[41:146,1])
+as.character(thisSweep2$row)
+as.character(thisSweep1$row)
+colnames(thisSweep1)[-c(1:2)]
+data[.theseRows,.modelNames]
+.theseRows <- as.character(thisSweep1$row)
+data[.theseRows,.modelNames]
+.modelNames <- colnames(thisSweep1)[-c(1:2)]
+data[.theseRows,.modelNames]
+data=ud4
+data[.theseRows,.modelNames]
+thisSweep2[,-c(1:2)]
+thisSweep1[,-c(1:2)]
+.modelWeights <- thisSweep2[,-c(1:2)]
+.outcome <- data[.theseRows, 2]
+.lag <- .lag[.theseRows]#
+.nrow=dim(.modelPreds)[1]; .ncol=dim(.modelPreds)[2]#
+modelOut <- modelFits(.outcome, .modelPreds, .lag)
+### take data, EBMA predictions from individual sweeps and evaluate#
+data=ud4#
+### four quarter predictions#
+.lagAmount=4#
+#
+.lag <-c(rep(NA, .lagAmount), data[1:(nrow(data)-.lagAmount),2])#
+names(.lag) <- rownames(data)#
+### set model names -- the same across all sweeps#
+.modelNames <- colnames(thisSweep2)[-c(1:2)]#
+#
+### predictions from the EBMA models#
+.ensemblePred1 <- thisSweep1$EBMA#
+.ensemblePred2 <- thisSweep2$EBMA#
+.ensemblePred3 <- thisSweep3$EBMA#
+.ensemblePred4 <- thisSweep4$EBMA#
+#
+.theseRows <- as.character(thisSweep2$row)#
+#
+### predictions of the individual models#
+.modelPreds <- data[.theseRows,.modelNames]#
+#
+.modelWeights <- thisSweep2[,-c(1:2)]#
+### true data#
+.outcome <- data[.theseRows, 2]#
+#
+.lag <- .lag[.theseRows]#
+.nrow=dim(.modelPreds)[1]; .ncol=dim(.modelPreds)[2]#
+modelOut <- modelFits(.outcome, .modelPreds, .lag)
+#####################################################################
+#         Replication of Unemployment Application                  ##
+#            Montgomery, Hollenbach, Ward                          ##
+#         Calibrating ensemle forecasting models                   ##
+#           sparse data in the social sciences                     ##
+#		   International Journal of Forecasting                    #       #
+#                     2014                                         ##
+#                                                                  ##
+#####################################################################
+rm(list=ls(all=TRUE))#
+library("multicore")#
+library("foreach")#
+library("doMC")#
+library(devtools)#
+library(roxygen2)#
+library(testthat)#
+#
+library(EBMAforecast) ### version 0.42 for exact results#
+#
+### set working directory to appropriate directory#
+setwd("~/Dropbox/EBMA/IJF_Replication/")#
+#read data of unemployment forecasts#
+ud <- read.csv("unemployment_data.csv", as.is=TRUE, header=TRUE, row.names=1)#
+#
+### keep only forecasts four quarters into the future, starting in second quarter of 1972 and exclude oberservations with#
+ud4 <- subset(ud, variable=="UNEMP6")#
+ud4 <- subset(ud4, forecast.year.quarter>1971.2)#
+ud4 <- ud4[all(is.na(ud4[,-c(1:3)]))==FALSE,]#
+#ud4 <- ud4[rowMeans(is.na(ud4[,-c(1:3)]))!=1,]#
+####
+#ud4Green <- ud4[,c("forecast.year.quarter", "greenbook", "variable")]#
+#ud4 <- ud4[,c(1,3,2,4:430)]#
+#colnames(ud4)[430] <- "XGB"#
+### create a function that runs EBMA algorithm over data with a specified window size, #
+### selects only models with minimum number of forecasts in calibration set, #
+### and specifies constants#
+Sweeper <- function(.windowSize=30, .minCal=15, .predYearQuarter="1980.1", .const=0, data=NULL, .imp=FALSE){#
+  .predThis <- which(data$forecast.year.quarter==.predYearQuarter)#
+  .theseRows <- (.predThis-.windowSize-1):(.predThis-1)#
+  .all <- length(.theseRows)#
+  .selector <- colSums(is.na(data[.theseRows,]))<=(.all-.minCal) & !is.na(data[.predThis,])#
+  .reduced <- data[.theseRows, .selector]#
+#
+   # this code takes out any row where we now have no forecasts#
+  .rowSelector <- !(rowMeans(is.na(.reduced[,-(1:3)]))==1)#
+  .reduced <- .reduced[.rowSelector,]#
+  .target <- data[.predThis, .selector]#
+#
+  ### selection as Forecastdata#
+  .FD <- makeForecastData(.predCalibration=.reduced[,-c(1:3)]#
+                          ,.outcomeCalibration=.reduced[,3]#
+                          ,.predTest=.target[,-c(1:3)]#
+                          ,.outcomeTest=.target[,3]#
+                          ,.modelNames=colnames(.reduced[,-c(1:3)])#
+                          )#
+  ### ensemble calibration code		#
+  ensemble <- calibrateEnsemble(.forecastData=.FD, model="normal", useModelParams=FALSE, const=.const, predType="posteriorMedian")#
+  output <- matrix(c(as.numeric(rownames(data[.predThis,])), ensemble@predTest[1], as.numeric(ensemble@modelWeights)), nrow=1)#
+  output <- data.frame(output)#
+  colnames(output) <- c("row", "EBMA", ensemble@modelNames)#
+  output#
+}#
+### set number of cores to your specific setting#
+registerDoMC(cores=4)#
+#
+### run sweeper function on unemployment data for 4 different values of c (0,0.05,0.1,1)#
+thisSweep1<- ldply(as.character(ud4[41:146,1]), Sweeper, .windowSize=8, .minCal=4, .const=.00, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep2<- ldply(as.character(ud4[41:146,1]), Sweeper, .windowSize=8, .minCal=4, .const=.05, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep3<- ldply(as.character(ud4[41:146,1]), Sweeper, .windowSize=8, .minCal=4, .const=.10, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+thisSweep4<- ldply(as.character(ud4[41:146,1]), Sweeper, .windowSize=8, .minCal=4, .const=1, .parallel=TRUE,  .imp=FALSE, data=ud4)#
+### functions to calculate predictive metrics (see Appendix)#
+modelFits <- function(.thisOutcome, .thisForecastMatrix, .thisBaseline){#
+	.absErr <- abs(.thisForecastMatrix-.thisOutcome)#
+  	.sqrErr <- .absErr^2#
+  	.ape <- .absErr/abs(.thisOutcome) # absolute percent error#
+#
+ 	### Mean absolute errror#
+  	mae <- colMeans(.absErr, na.rm=TRUE)#
+#
+  	### Root mean squared error#
+  	rmse <-  sqrt(colMeans(.sqrErr, na.rm=TRUE))#
+#
+  	### Median absolute deviation#
+  	mad <- apply(.absErr, 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  	### Root mean Squaqred logarithmic error#
+  	.rmsle <- function(x, y){#
+    	sqrt(mean((log(abs(x)+1)-log(abs(y)+1))^2, na.rm=TRUE))#
+  	}#
+  	rmsle <- apply(.thisForecastMatrix, 2, .rmsle, y=.thisOutcome)#
+#
+  	### mean absolute percentage error#
+  	mape <- colMeans(.ape, na.rm=TRUE)*100#
+#
+  	###median absolute percentage errro#
+  	meape <-  apply(.ape, 2, quantile, prob=.5, na.rm=TRUE)*100#
+#
+  	### median relative absolute error#
+  	.eStar <- .thisOutcome-.thisBaseline#
+  	.e <- .thisOutcome-.thisForecastMatrix#
+#
+  	mrae <- apply(abs(.e/.eStar), 2, quantile, probs=.5, na.rm=TRUE)#
+#
+  	### percent worse#
+  	pw <- colMeans(abs(.e)>abs(.eStar), na.rm =TRUE)*100#
+  	out <- cbind(mae, rmse, mad, rmsle, mape, meape, mrae, pw)#
+  	return(out)#
+}#
+### take data, EBMA predictions from individual sweeps and evaluate#
+data=ud4#
+### four quarter predictions#
+.lagAmount=4#
+#
+.lag <-c(rep(NA, .lagAmount), data[1:(nrow(data)-.lagAmount),2])#
+names(.lag) <- rownames(data)#
+### set model names -- the same across all sweeps#
+.modelNames <- colnames(thisSweep2)[-c(1:2)]#
+#
+### predictions from the EBMA models#
+.ensemblePred1 <- thisSweep1$EBMA#
+.ensemblePred2 <- thisSweep2$EBMA#
+.ensemblePred3 <- thisSweep3$EBMA#
+.ensemblePred4 <- thisSweep4$EBMA#
+#
+.theseRows <- as.character(thisSweep2$row)#
+#
+### predictions of the individual models#
+.modelPreds <- data[.theseRows,.modelNames]#
+#
+.modelWeights <- thisSweep2[,-c(1:2)]#
+### true data#
+.outcome <- data[.theseRows, 2]#
+#
+.lag <- .lag[.theseRows]#
+.nrow=dim(.modelPreds)[1]; .ncol=dim(.modelPreds)[2]#
+modelOut <- modelFits(.outcome, .modelPreds, .lag)#
+### Table 5#
+#
+### mean, median, & green book predictions#
+.mean <- rowMeans(data[.theseRows,-c(1:3)], na.rm=TRUE) # an alternate metric#
+.median <- apply(data[.theseRows,-c(1:3)], 1, quantile, probs=.5, na.rm=TRUE)#
+.green <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$greenbook#
+.time <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$forecast.year.quarter#
+#
+### put together all forecasts#
+all <- cbind(.ensemblePred1, .ensemblePred2, .ensemblePred3, .ensemblePred4,.green, .mean, .median)#
+all <- all[!is.na(.green),]#
+.redOut <- .outcome[!is.na(.green)]#
+.redLag <- .lag[!is.na(.green)]#
+.outTable <- modelFits(.redOut, all, .redLag)#
+xtable(.outTable)
+ud4Green <- ud4[,c("forecast.year.quarter", "greenbook", "variable")]
+### take data, EBMA predictions from individual sweeps and evaluate#
+data=ud4#
+### four quarter predictions#
+.lagAmount=4#
+#
+.lag <-c(rep(NA, .lagAmount), data[1:(nrow(data)-.lagAmount),2])#
+names(.lag) <- rownames(data)#
+### set model names -- the same across all sweeps#
+.modelNames <- colnames(thisSweep2)[-c(1:2)]#
+#
+### predictions from the EBMA models#
+.ensemblePred1 <- thisSweep1$EBMA#
+.ensemblePred2 <- thisSweep2$EBMA#
+.ensemblePred3 <- thisSweep3$EBMA#
+.ensemblePred4 <- thisSweep4$EBMA#
+#
+.theseRows <- as.character(thisSweep2$row)#
+#
+### predictions of the individual models#
+.modelPreds <- data[.theseRows,.modelNames]#
+#
+.modelWeights <- thisSweep2[,-c(1:2)]#
+### true data#
+.outcome <- data[.theseRows, 2]#
+#
+.lag <- .lag[.theseRows]#
+.nrow=dim(.modelPreds)[1]; .ncol=dim(.modelPreds)[2]#
+modelOut <- modelFits(.outcome, .modelPreds, .lag)#
+### Table 5#
+#
+### mean, median, & green book predictions#
+.mean <- rowMeans(data[.theseRows,-c(1:3)], na.rm=TRUE) # an alternate metric#
+.median <- apply(data[.theseRows,-c(1:3)], 1, quantile, probs=.5, na.rm=TRUE)#
+.green <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$greenbook#
+.time <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$forecast.year.quarter#
+#
+### put together all forecasts#
+all <- cbind(.ensemblePred1, .ensemblePred2, .ensemblePred3, .ensemblePred4,.green, .mean, .median)#
+all <- all[!is.na(.green),]#
+.redOut <- .outcome[!is.na(.green)]#
+.redLag <- .lag[!is.na(.green)]#
+.outTable <- modelFits(.redOut, all, .redLag)#
+xtable(.outTable)
+.lag
+.modelPreds
+.outcome
+.outcome <- data[.theseRows, 3]
+.outcome <- data[.theseRows, 3]
+.lag <- .lag[.theseRows]#
+.nrow=dim(.modelPreds)[1]; .ncol=dim(.modelPreds)[2]#
+modelOut <- modelFits(.outcome, .modelPreds, .lag)
+.outcome
+.modelPreds
+.lag
+.lag <-c(rep(NA, .lagAmount), data[1:(nrow(data)-.lagAmount),3])
+names(.lag) <- rownames(data)
+.modelNames <- colnames(thisSweep2)[-c(1:2)]
+.lag <- .lag[.theseRows]#
+.nrow=dim(.modelPreds)[1]; .ncol=dim(.modelPreds)[2]#
+modelOut <- modelFits(.outcome, .modelPreds, .lag)
+### mean, median, & green book predictions#
+.mean <- rowMeans(data[.theseRows,-c(1:3)], na.rm=TRUE) # an alternate metric#
+.median <- apply(data[.theseRows,-c(1:3)], 1, quantile, probs=.5, na.rm=TRUE)#
+.green <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$greenbook#
+.time <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$forecast.year.quarter#
+#
+### put together all forecasts#
+all <- cbind(.ensemblePred1, .ensemblePred2, .ensemblePred3, .ensemblePred4,.green, .mean, .median)#
+all <- all[!is.na(.green),]#
+.redOut <- .outcome[!is.na(.green)]#
+.redLag <- .lag[!is.na(.green)]#
+.outTable <- modelFits(.redOut, all, .redLag)#
+xtable(.outTable)
+library(xtable)
+xtable(.outTable)
+.ensemblePred2
+.modelPreds
+nrow(.modelPreds)
+ncol(.modelPreds)
+ensembleOut <- modelFits(.outcome, .ensemblePredMatrix, .lag)
+.ensemblePredMatrix <- matrix(.ensemblePred2, nrow=nrow(.modelPreds), ncol=ncol(.modelPreds))
+.ensemblePredMatrix[is.na(.modelPreds)] <- NA
+ensembleOut <- modelFits(.outcome, .ensemblePredMatrix, .lag)
+ensembleOut
+count <- colSums(!is.na(.modelPreds))#
+length(count)
+count
+(modelOut-ensembleOut)
+modelOut
+for_table
+pct_better<-rowMeans((modelOut-ensembleOut)>=0)*100#
+rownames<-seq(1,length(count))#
+for_table<-as.data.frame(cbind(count,pct_better))
+for_table
+.ensemblePred2
+.ensemblePred2
+.ensemblePredMatrix <- matrix(.ensemblePred2, nrow=nrow(.modelPreds), ncol=ncol(.modelPreds))
+.ensemblePredMatrix
+.modelPreds
+ensembleOut <- modelFits(.outcome, .ensemblePredMatrix, .lag)
+ensembleOut
+count <- colSums(!is.na(.modelPreds))
+count
+rowMeans((modelOut-ensembleOut)>=0)
+for_table<-as.data.frame(cbind(count,pct_better))
+for_table
+#### now create cells for Table 6#
+cell_025_010<-sum(ifelse(for_table$count <11 & for_table$pct_better<26,1,0))#
+cell_2650_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better<26,1,0))#
+cell_2650_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_1130<-sum(ifelse(for_table$count >10 & for_table$count<31 &for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better<26,1,0))#
+cell_2650_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_3160<-sum(ifelse(for_table$count >30 &for_table$count<61  & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_61<-sum(ifelse(for_table$count >60 & for_table$pct_better<26,1,0))#
+cell_2650_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+mat<-matrix(ncol=4,nrow=4,c(cell_76100_010, cell_5175_010, cell_2650_010, cell_025_010, cell_76100_1130, cell_5175_1130, cell_2650_1130, cell_025_1130, cell_76100_3160, cell_5175_3160, cell_2650_3160, cell_025_3160, cell_76100_61, cell_5175_61, cell_2650_61, cell_025_61),byrow=F)#
+all<-sum(mat)#
+sum(mat)#
+colSums(mat)#
+matOut <- rbind(mat, colSums(mat))#
+for(i in 1:4){#
+matOut[i,] <-  matOut[i,]/matOut[5,]#
+}#
+##### Table 6 in Paper#
+xtable(matOut)
+par(mar=c(2,2,.5,2), mfrow=c(1,1), mgp=c(1,0.25,0), tcl=0)#
+mycols <- c("gray90",rgb(241,163,64,maxColorValue=255), rgb(230, 97, 1,maxColorValue=255), rgb(35, 132, 67,maxColorValue=255))#
+mywidths <- c(10,8,4,4)#
+plot(.time, .redOut, type="l", lwd=mywidths[1], ylab="", xlab="", main="", bty="n", las=1,col=mycols[1],xlim=c(1981,2008),axes=F)#
+myyears<-c("1980","1985","1990","1995","2000","2005","2008")#
+axis(1,at=c(1980,1985,1990,1995,2000,2005,2008),labels=myyears,cex.axis=.9)#
+colnames(all)#
+for(i in 1:3){#
+  this <- c(2, 6, 7)#
+  lines(.time, all[,this[i]], col=mycols[i+1], lty=1, lwd=mywidths[i+1])#
+}#
+mytxtcol<-mycols#
+mytxtcol[1]<-"black"#
+legend(1998, 10, c("Observed", "EBMA", "Median", "Green Book"), col=mycols, lty=c(1),bty="n",lwd=5,text.col=mytxtcol)
+### take data, EBMA predictions from individual sweeps and evaluate#
+data=ud4#
+### four quarter predictions#
+.lagAmount=4#
+#
+.lag <-c(rep(NA, .lagAmount), data[1:(nrow(data)-.lagAmount),3])#
+names(.lag) <- rownames(data)#
+### set model names -- the same across all sweeps#
+.modelNames <- colnames(thisSweep2)[-c(1:2)]#
+#
+### predictions from the EBMA models#
+.ensemblePred1 <- thisSweep1$EBMA#
+.ensemblePred2 <- thisSweep2$EBMA#
+.ensemblePred3 <- thisSweep3$EBMA#
+.ensemblePred4 <- thisSweep4$EBMA#
+#
+.theseRows <- as.character(thisSweep2$row)#
+#
+### predictions of the individual models#
+.modelPreds <- data[.theseRows,.modelNames]#
+#
+.modelWeights <- thisSweep2[,-c(1:2)]#
+### true data#
+.outcome <- data[.theseRows, 3]#
+#
+.lag <- .lag[.theseRows]#
+.nrow=dim(.modelPreds)[1]; .ncol=dim(.modelPreds)[2]#
+modelOut <- modelFits(.outcome, .modelPreds, .lag)#
+### Table 5#
+#
+### mean, median, & green book predictions#
+.mean <- rowMeans(data[.theseRows,-c(1:3)], na.rm=TRUE) # an alternate metric#
+.median <- apply(data[.theseRows,-c(1:3)], 1, quantile, probs=.5, na.rm=TRUE)#
+.green <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$greenbook#
+.time <- subset(ud4Green, forecast.year.quarter%in%data[.theseRows,1])$forecast.year.quarter#
+#
+### put together all forecasts#
+all <- cbind(.ensemblePred1, .ensemblePred2, .ensemblePred3, .ensemblePred4,.green, .mean, .median)#
+all <- all[!is.na(.green),]#
+.redOut <- .outcome[!is.na(.green)]#
+.redLag <- .lag[!is.na(.green)]#
+.outTable <- modelFits(.redOut, all, .redLag)#
+xtable(.outTable)#
+### create matrix with the columns being predictions from EBMA model with c= 0.05 #
+.ensemblePredMatrix <- matrix(.ensemblePred2, nrow=nrow(.modelPreds), ncol=ncol(.modelPreds))#
+#
+### set NA when model prediction was NA#
+.ensemblePredMatrix[is.na(.modelPreds)] <- NA#
+#
+###calculate all the fit statistics for each#
+ensembleOut <- modelFits(.outcome, .ensemblePredMatrix, .lag)#
+## Total number of forecasts each model made#
+count <- colSums(!is.na(.modelPreds))#
+length(count) # total number of models included#
+#
+### For model comparison table, #
+### calculate what pct of metrics EBMA is better than for each model #
+pct_better<-rowMeans((modelOut-ensembleOut)>=0)*100#
+rownames<-seq(1,length(count))#
+### table with number of predictions each model made and how many metrics EBMA is better on compared to that model#
+for_table<-as.data.frame(cbind(count,pct_better))#
+#### now create cells for Table 6#
+cell_025_010<-sum(ifelse(for_table$count <11 & for_table$pct_better<26,1,0))#
+cell_2650_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better<26,1,0))#
+cell_2650_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_1130<-sum(ifelse(for_table$count >10 & for_table$count<31 &for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better<26,1,0))#
+cell_2650_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_3160<-sum(ifelse(for_table$count >30 &for_table$count<61  & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_61<-sum(ifelse(for_table$count >60 & for_table$pct_better<26,1,0))#
+cell_2650_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+mat<-matrix(ncol=4,nrow=4,c(cell_76100_010, cell_5175_010, cell_2650_010, cell_025_010, cell_76100_1130, cell_5175_1130, cell_2650_1130, cell_025_1130, cell_76100_3160, cell_5175_3160, cell_2650_3160, cell_025_3160, cell_76100_61, cell_5175_61, cell_2650_61, cell_025_61),byrow=F)#
+all<-sum(mat)#
+sum(mat)#
+colSums(mat)#
+matOut <- rbind(mat, colSums(mat))#
+for(i in 1:4){#
+matOut[i,] <-  matOut[i,]/matOut[5,]#
+}#
+##### Table 6 in Paper#
+xtable(matOut)
+par(mar=c(2,2,.5,2), mfrow=c(1,1), mgp=c(1,0.25,0), tcl=0)#
+mycols <- c("gray90",rgb(241,163,64,maxColorValue=255), rgb(230, 97, 1,maxColorValue=255), rgb(35, 132, 67,maxColorValue=255))#
+mywidths <- c(10,8,4,4)#
+plot(.time, .redOut, type="l", lwd=mywidths[1], ylab="", xlab="", main="", bty="n", las=1,col=mycols[1],xlim=c(1981,2008),axes=F)#
+myyears<-c("1980","1985","1990","1995","2000","2005","2008")#
+axis(1,at=c(1980,1985,1990,1995,2000,2005,2008),labels=myyears,cex.axis=.9)#
+colnames(all)#
+for(i in 1:3){#
+  this <- c(2, 6, 7)#
+  lines(.time, all[,this[i]], col=mycols[i+1], lty=1, lwd=mywidths[i+1])#
+}#
+mytxtcol<-mycols#
+mytxtcol[1]<-"black"#
+legend(1998, 10, c("Observed", "EBMA", "Median", "Green Book"), col=mycols, lty=c(1),bty="n",lwd=5,text.col=mytxtcol)
+this
+this[i]
+mycols[i+1]
+i=2
+this[i]
+all[,this[i]]
+all
+mycols <- c("gray90",rgb(241,163,64,maxColorValue=255), rgb(230, 97, 1,maxColorValue=255), rgb(35, 132, 67,maxColorValue=255))
+.time
+.redOut
+plot(.time, .redOut, type="l", lwd=mywidths[1], ylab="", xlab="", main="", bty="n", las=1,col=mycols[1],xlim=c(1981,2008),axes=F)
+myyears<-c("1980","1985","1990","1995","2000","2005","2008")
+axis(1,at=c(1980,1985,1990,1995,2000,2005,2008),labels=years,cex.axis=.9)
+years<-c("1980","1985","1990","1995","2000","2005","2008")
+axis(1,at=c(1980,1985,1990,1995,2000,2005,2008),labels=years,cex.axis=.9)
+colnames(all)
+all
+all <- cbind(.ensemblePred1, .ensemblePred2, .ensemblePred3, .ensemblePred4,.green, .mean, .median)
+all <- all[!is.na(.green),]
+all
+colnames(all)
+for(i in 1:3){#
+  this <- c(2, 6, 7)#
+  lines(.time, all[,this[i]], col=mycols[i+1], lty=1, lwd=mywidths[i+1])#
+}#
+mytxtcol<-mycols
+mytxtcol[1]<-"black"
+legend(1998, 10, c("Observed", "EBMA", "Median", "Green Book"), col=mycols, lty=c(1),bty="n",lwd=5,text.col=mytxtcol)
+all<-sum(mat)
+sum(mat)
+colSums(mat)
+matOut
+matOut[i,] <-  matOut[i,]/matOut[5,]
+matOut[i,]
+cell_025_010<-sum(ifelse(for_table$count <11 & for_table$pct_better<26,1,0))#
+cell_2650_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_010<-sum(ifelse(for_table$count <11 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better<26,1,0))#
+cell_2650_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_1130<-sum(ifelse(for_table$count >10 & for_table$count<31 &for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_1130<-sum(ifelse(for_table$count >10 &for_table$count<31 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better<26,1,0))#
+cell_2650_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_3160<-sum(ifelse(for_table$count >30 &for_table$count<61  & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_3160<-sum(ifelse(for_table$count >30 &for_table$count<61 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+cell_025_61<-sum(ifelse(for_table$count >60 & for_table$pct_better<26,1,0))#
+cell_2650_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>25 &for_table$pct_better<51,1,0))#
+cell_5175_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>50 &for_table$pct_better<76,1,0))#
+cell_76100_61<-sum(ifelse(for_table$count >60 & for_table$pct_better>75 &for_table$pct_better<101,1,0))#
+mat<-matrix(ncol=4,nrow=4,c(cell_76100_010, cell_5175_010, cell_2650_010, cell_025_010, cell_76100_1130, cell_5175_1130, cell_2650_1130, cell_025_1130, cell_76100_3160, cell_5175_3160, cell_2650_3160, cell_025_3160, cell_76100_61, cell_5175_61, cell_2650_61, cell_025_61),byrow=F)#
+#
+all<-sum(mat)#
+sum(mat)#
+colSums(mat)
+matOut <- rbind(mat, colSums(mat))
+mat
+for(i in 1:4){#
+matOut[i,] <-  matOut[i,]/matOut[5,]#
+}
+xtable(matOut)
+rm(list=ls())#
+library(EBMAforecast) ### version 0.42 for exact results#
+library(xtable)#
+### set working directory to appropriate directory#
+setwd("~/Dropbox/EBMA/IJF_Replication")#
+#
+### load data #
+pres.data <- read.csv("presidential_data.csv")#
+### create forecast data object#
+.FD <- makeForecastData(.predCalibration=pres.data[1:5,-c(1:2)]#
+                          ,.outcomeCalibration=pres.data[1:5,2]#
+                          ,.predTest=pres.data[6,-c(1,2)] #
+                          ,.outcomeTest=pres.data[6,2] #
+                          ,.modelNames=colnames(pres.data[,-c(1:2)])#
+                          )#
+ensemble <- calibrateEnsemble(.forecastData=.FD, model="normal", useModelParams=FALSE, const=0.05)#
+summary(ensemble, showCoefs=FALSE)#
+#
+xtable(summary(ensemble, showCoefs=FALSE)@summaryData)#
+ensemble@predTest
+rm(list=ls())#
+library(EBMAforecast) ### version 0.42 for exact results#
+library(xtable)#
+### set working directory to appropriate directory#
+setwd("~/Dropbox/EBMA/IJF_Replication")#
+#
+### load data #
+pres.data <- read.csv("presidential_data.csv")#
+### create forecast data object#
+.FD <- makeForecastData(.predCalibration=pres.data[1:5,-c(1:2)]#
+                          ,.outcomeCalibration=pres.data[1:5,2]#
+                          ,.predTest=pres.data[6,-c(1,2)] #
+                          ,.outcomeTest=pres.data[6,2] #
+                          ,.modelNames=colnames(pres.data[,-c(1:2)])#
+                          )#
+### run Ensemble with c=0.05#
+ensemble <- calibrateEnsemble(.forecastData=.FD, model="normal", useModelParams=FALSE, const=0.05)#
+#
+### Table 3#
+xtable(summary(ensemble, showCoefs=FALSE)@summaryData)#
+#
+### EBMA prediction#
+ensemble@predTest#
+### Figure 3#
+pdf(width=6, height=6, file="presForecast.pdf")#
+par(mfrow=c(2,1), mar=c(2,2.5,2,.5), tcl=0, mgp=c(1.1,.1,0), cex.lab=.8, cex.main=.9)#
+plot(ensemble, subset=5, main="2008 (In-sample)", xLab="% Two party vote for incumbent")#
+plot(ensemble, subset=1, period="test", main="2012 (Out-of-sample)", xLab="% Two party vote for incumbent")#
+dev.off()#
+#
+pdf(width=6, height=6, file="presForecast2012.pdf")#
+par(mfrow=c(2,1), mar=c(2,2.5,2,.5), tcl=0, mgp=c(1.1,.1,0), cex.lab=.8, cex.main=.9)#
+plot(ensemble, subset=5, main="2008 (In-sample)", xLab="% Two party vote for incumbent")#
+plot(ensemble, subset=1, period="test", main="2012 (Out-of-sample)", xLab="% Two party vote for incumbent")#
+dev.off()#
+### EBMA model with c=0.00#
+ensemble1 <- calibrateEnsemble(.forecastData=.FD, model="normal", useModelParams=FALSE, const=0.00)#
+### prediction with c=0#
+ensemble1@predTest#
+### EBMA model with c=0.1#
+ensemble2 <- calibrateEnsemble(.forecastData=.FD, model="normal", useModelParams=FALSE, const=0.1)#
+### prediction with c=0.1#
+ensemble2@predTest#
+### mean prediction#
+mean_pred2012 <- apply(pres.data[6,-c(1,2)] ,1, mean)#
+### median prediction#
+median_pred2012 <- apply(pres.data[6,-c(1,2)] ,1, median)#
+#
+### Table 4#
+table4_prediction=c(mean_pred2012,median_pred2012,ensemble1@predTest[1],ensemble@predTest[1],ensemble2@predTest[1])#
+table4_prediction =round(table4_prediction,1)#
+#
+### Calculate Error#
+table4_error=abs(table4_prediction-51.9)#
+#
+table4 =as.data.frame(rbind(table4_prediction, table4_error))#
+names(table4)=c("Mean","Median","c=0","c=0.05","c=0.1")#
+rownames(table4)=c("2012 prediction","Absolute Error")#
+xtable(table4)#
+modelPreds <- ensemble@predTest[-1]#
+#
+#95% Credible interval#
+touchyQuantBMANormal <- function (alpha, WEIGHTS, MEAN, SD, up, low) #
+{#
+  z <- uniroot(ensembleBMA:::cdfBMAnormal, lower = low, upper = up, #
+               WEIGHTS = WEIGHTS, MEAN = MEAN, SD = SD, offset = alpha)#
+  z$root#
+}#
+ensembleBMA:::quantBMAnormal(.05, ensemble@modelWeights, modelPreds, rep(sqrt(ensemble@variance), length(modelPreds)))#
+ensembleBMA:::quantBMAnormal(.95, ensemble@modelWeights, modelPreds, rep(sqrt(ensemble@variance), length(modelPreds)))#
+# Prob that Obama wins#
+1-ensembleBMA:::cdfBMAnormal(50, ensemble@modelWeights, modelPreds, rep(sqrt(ensemble@variance), length(modelPreds)), 0)

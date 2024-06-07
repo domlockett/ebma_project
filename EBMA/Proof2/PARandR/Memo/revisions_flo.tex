@@ -1,0 +1,104 @@
+%\documentclass[pdftex,12pt,fullpage,oneside]{amsart}
+\documentclass[12pt,fullpage]{article}
+\usepackage{array,amsmath,psfrag,amssymb,subfigure,tabularx}
+\usepackage{hyperref,multicol}
+\usepackage{pa}
+\usepackage{booktabs}
+%\usepackage{vmargin,boxedminipage}
+\usepackage[usenames]{color}
+\usepackage{datetime}
+\usepackage{dcolumn}
+\usepackage{wrapfig}
+\usepackage{setspace}
+\usepackage{url}
+\usepackage[english]{babel}
+\usepackage{times}
+\usepackage{multirow}
+\usepackage[pdftex]{graphicx}
+\usepackage{lscape}
+\usepackage[top=1in,right=1in,left=1in,bottom=1in]{geometry}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+\graphicspath{{/Volumes/"ICEWS Project"/"NSF BMA"/graphics/}} % change to nsf
+\newcommand{\note}[1]{\footnote{\doublespacing#1 \vspace{4 mm}}}
+
+\usepackage{natbib}
+\bibpunct{(}{)}{;}{a}{}{,}
+\bibdata{Flo_Bib}
+\begin{document}
+\subsection{Parameter estimation by maximum likelihood and EM
+algorithm}
+
+Parameter estimation is conducted using only the data from the
+training period $T$.  The parameters $a_{0k}$ and $a_{1k}$ are
+specific to each individual component model.  For model $k$, these
+parameters can be estimated as traditional linear models where
+$\mathbf{y}$ is the dependent variable and the covariate list includes
+only $\mathbf{f}_k$ and a constant term.
+
+The difficulty is in estimating the weighting parameters,
+$w_k~\forall~ k \in [1, 2, \dots, K]$. For the moment, we have
+followed \citet{Raftery:2005} and \citet{Sloughter:2007} in using
+maximum likelihood methods. In future work we plan to implement a
+fully Bayesian analysis by placing priors on all parameters and using
+Markov chain Monte Carlo techniques to estimate model weights
+\citep[c.f.][]{Vrugt:2008}.
+
+With standard independence assumptions, the log-likelihood for the
+model weights is
+\begin{equation}
+\small
+  \ell (w_1, \ldots, w_K | a_{01},  \ldots, a_{0K}; a_{11},
+  \ldots, a_{1K})= \underset{s,t}{\sum}\mbox{log }p(y_{st} |
+  f_{1st}, \ldots, f_{Kst}).
+\end{equation}
+\noindent where the summation is over values of $s$ and $t$ that index
+all observations in the training time period, and $p(y_{st}|f_{1st},
+\ldots, f_{Kst}) $ is given by \eqref{pdf}. The log-likelihood
+function cannot be maximized analytically, but \citet{Raftery:2005}
+and \citet{Sloughter:2007} suggest using the expectation-maximization
+(EM) algorithm.
+
+To find the the ``optimal'' model weights using the EM algorithm we introduce the unobserved quantities $z_{kst}$, that describe the posterior probability of being correct for each model in the forecast for observations $s$ in time $t$. Thus for each observation $s,t$ in the training period T there exist $k$ posterior probabilities of being correct, one for each model, these probabilities sum to one, i.e. $\sum_{k=1}^K z_{kst} =1$.  
+
+The EM algorithm alternates between the Estimation (E) step and the maximization (M) step until a local maximum is found. The process starts with the E step using an initial guess of the parameters (in our case $w_k$) and involves calculating estimates for $z_{kst}$. In the first iteration we assume that each model has the same weight, and thus $w_k^{(0)} =  \frac{1}{K} ~ \forall ~ k \in [1, \ldots, K]$. Given initial parameters (i.e. $j=0$ in the first iteration) we can estimate the unobserved quantities $z_{kst}$ using the formula
+\begin{equation}
+\small
+\hat{z}^{(j+1)}_{kst} = \frac{\hat{w}^{(j)}_k
+p^{(j)}(y_{st}|f_{kst})}{\overset{K}{\underset{k=1}{\sum}}\hat{w}^{(j)}_kp^{(j)}(y_{st}|f_{kst})},
+\end{equation}
+\noindent where the superscript $j$ refers to the $j$th iteration of the EM algorithm.
+
+It follows that $w_k^{(j)}$ is the estimate of $w_k$ in the $j$th
+iteration and $p^{(j)}(.)$ is shown in \eqref{pdf}.  Assuming these
+estimates of $z_{kst}$ are correct, it is then straightforward to
+derive the maximizing value for the model weights. Thus in the M step, using the estimates of $z_{kst}$ derived in the E step described above, we can then find the appropriate model weights by estimating these as
+$\hat{w}^{(j+1)}_k=\frac{1}{n}\underset{s,t}{\sum}\hat{z}^{(j+1)}_{kst}$,
+where $n$ represents the number of observations in the training
+dataset.\note{In the case of normally distributed data,
+  $\hat{\sigma}^{2(j+1)}=\frac{1}{n}\underset{s,t}{\sum}\overset{K}{\underset{k=1}{\sum}}\hat{z}^{(j+1)}_{kst}(y_{st}-f_{kst})^2$.}
+The E and M steps are then iterated, thus the $w_k$ value of the previous iteration is used to estimate new $z_{kst}$ values, which are then used to estimate new $w_{k}$'s. This is repeated until the improvement in the log-likelihood is no larger than some pre-defined
+tolerance. In each iteration of the EM process the log-likelihood will increase and thus a local maximum is guaranteed to be found. Convergence to the global
+  maximum however is not assured, and the model may be sensitive to initial
+  conditions. \note{In future research, we will explore these convergence
+  issues more fully with special attention paid to comparison with
+  fully Bayesian implementations.}
+
+\newpage
+\singlespacing
+
+ \bibliographystyle{chicago}
+%\bibliography{Flo_Bib,masterEBMA}
+\bibliography{Flo_Bib}
+
+%\bibdata{"Volumes/"ICEWS Project"/"NSF BMA"/flo_Bib","/Volumes/"ICEWS Project"/"NSF BMA"/masterEBMA"}
+%\bibliography{/Users/mw160/Documents/BIBTEXFILES/predictionrefs/predictions2,/Users/mw160/Documents/BIBTEXFILES/2009mdwbib}}
+
+
+
+%Contact information for authors:
+
+\end{document}
+\bye

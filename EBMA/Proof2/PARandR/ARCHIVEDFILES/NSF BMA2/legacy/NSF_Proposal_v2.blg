@@ -1,0 +1,84 @@
+This is BibTeX, Version 0.99c (TeX Live 2009)
+The top-level auxiliary file: NSF_Proposal_v2.aux
+The style file: apsr.bst
+I couldn't open database file /Users/jacobmontgomery/Dissertation/master3.bib
+---line 150 of file NSF_Proposal_v2.aux
+ : \bibdata{Flo_Bib,/Users/jacobmontgomery/Dissertation/master3
+ :                                                             }
+I'm skipping whatever remains of this command
+Database file #1: Flo_Bib.bib
+Warning--I didn't find a database entry for "Harrell:2001"
+Warning--I didn't find a database entry for "Chocuri:Robinson:1978"
+Warning--I didn't find a database entry for "Campbell:1990"
+Warning--I didn't find a database entry for "Jerome:1999"
+Warning--I didn't find a database entry for "Whitely:2005"
+Warning--I didn't find a database entry for "Lewis-Beck:2005"
+Warning--I didn't find a database entry for "Ruger:2004"
+Warning--I didn't find a database entry for "Graefe:2010"
+Warning--I didn't find a database entry for "Armstrong:2001"
+Warning--I didn't find a database entry for "Raftery:2005"
+Warning--I didn't find a database entry for "Madigan:1994"
+Warning--I didn't find a database entry for "Draper:1995"
+Warning--I didn't find a database entry for "Raftery:1995"
+Warning--I didn't find a database entry for "Hoeting:1999"
+Warning--I didn't find a database entry for "Clyde:2003"
+Warning--I didn't find a database entry for "Clyde:2004"
+Warning--I didn't find a database entry for "Raftery:2003"
+Warning--I didn't find a database entry for "Bartels:1997"
+Warning--I didn't find a database entry for "Bartels:2001"
+Warning--I didn't find a database entry for "Gill:2004"
+Warning--I didn't find a database entry for "Imai:2004"
+Warning--I didn't find a database entry for "Geer:2006b"
+Warning--I didn't find a database entry for "Montgomery:2010c"
+Warning--I didn't find a database entry for "Sloughter:2007"
+Warning--I didn't find a database entry for "Sloughter:2010"
+Warning--I didn't find a database entry for "Hamill:2004"
+Warning--I didn't find a database entry for "Vrugt:2008"
+Warning--I didn't find a database entry for "Brown:1999"
+Warning--I didn't find a database entry for "Hibbs:2000"
+Warning--I didn't find a database entry for "Hersbach:2000"
+Warning--I didn't find a database entry for "Martin:2004"
+Warning--empty note in Fair2011
+Warning--empty note in Hibbs2011
+You've used 43 entries,
+            2874 wiz_defined-function locations,
+            979 strings with 12192 characters,
+and the built_in function-call counts, 162051 in all, are:
+= -- 26404
+> -- 1832
+< -- 0
++ -- 12259
+- -- 661
+* -- 13731
+:= -- 32842
+add.period$ -- 172
+call.type$ -- 43
+change.case$ -- 559
+chr.to.int$ -- 43
+cite$ -- 45
+duplicate$ -- 628
+empty$ -- 1442
+format.name$ -- 699
+if$ -- 29090
+int.to.chr$ -- 5
+int.to.str$ -- 0
+missing$ -- 42
+newline$ -- 181
+num.names$ -- 494
+pop$ -- 143
+preamble$ -- 1
+purify$ -- 645
+quote$ -- 0
+skip$ -- 542
+stack$ -- 0
+substring$ -- 37123
+swap$ -- 78
+text.length$ -- 602
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 166
+warning$ -- 2
+while$ -- 994
+width$ -- 0
+write$ -- 583
+(There was 1 error message)

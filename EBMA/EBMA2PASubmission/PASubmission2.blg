@@ -1,0 +1,50 @@
+This is BibTeX, Version 0.99d (TeX Live 2012)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: PASubmission2.aux
+The style file: chicago.bst
+Database file #1: Bibliography_EBMA.bib
+Warning--no number and no volume in Linzer:2013
+Warning--page numbers missing in Linzer:2013
+Warning--page numbers missing in MoellerEtAl:2012
+You've used 95 entries,
+            2861 wiz_defined-function locations,
+            1185 strings with 20128 characters,
+and the built_in function-call counts, 62312 in all, are:
+= -- 5260
+> -- 4313
+< -- 5
++ -- 1262
+- -- 1511
+* -- 5498
+:= -- 11522
+add.period$ -- 289
+call.type$ -- 95
+change.case$ -- 657
+chr.to.int$ -- 92
+cite$ -- 98
+duplicate$ -- 1675
+empty$ -- 3874
+format.name$ -- 1714
+if$ -- 11457
+int.to.chr$ -- 4
+int.to.str$ -- 0
+missing$ -- 85
+newline$ -- 478
+num.names$ -- 952
+pop$ -- 397
+preamble$ -- 1
+purify$ -- 1227
+quote$ -- 0
+skip$ -- 1776
+stack$ -- 0
+substring$ -- 3481
+swap$ -- 544
+text.length$ -- 5
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 1828
+warning$ -- 3
+while$ -- 954
+width$ -- 0
+write$ -- 1255
+(There were 3 warnings)

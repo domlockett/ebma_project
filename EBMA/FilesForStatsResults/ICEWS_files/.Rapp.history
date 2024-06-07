@@ -1,0 +1,129 @@
+library(ICEWS2)#
+data(icews)#
+data(Wmatrices)#
+#
+# Duke files#
+#
+dataICEWS<-data.frame(icews$insurgency,icews$pop.l3,icews$proximitytoelection,icews$parcomp,icews$xconst,icews$W.events.insurgency.l3,icews$gdppc.l3,icews$gdpgrowth.l3,as.character(icews$country),icews$year,icews$month, stringsAsFactors=FALSE) #
+names(dataICEWS)<-c("insurgency","pop.l3","proximitytoelection","parcomp","xconst","W.events.insurgency.l3","gdppc.l3","gdpgrowth.l3","country","year","month")#
+#
+summary(dataICEWS)#
+#
+setwd("/Volumes/ICEWS Project/BMA Stuffs/ICEWS_files/")#
+write.csv(dataICEWS, file="dataICEWS.csv", row.names=FALSE)
+library(lme4)#
+setwd("/Volumes/ICEWS Project/BMA Stuffs/ICEWS_files/")#
+dataICEWS<-read.csv(file="dataICEWS.csv")#
+#
+summary(dataICEWS)
+#
+in.sample <- dataICEWS[dataICEWS$year>=1999 & dataICEWS$year<=2008,] # 1999-2008#
+out.sample <- dataICEWS[dataICEWS$year==2009| dataICEWS$year==2010,] # 2009-2010
+#
+model.lmer.3<-lmer(insurgency ~ pop.l3  + proximitytoelection + parcomp + xconst + W.events.insurgency.l3 + (1 +gdppc.l3 |country),data=in.sample,family="binomial")#
+summary(model.lmer.3)#
+in.lmer <- fitted(model.lmer.3)#
+out.lmer <- predict.lmer(model.lmer.3, newdata=out.sample)
+#
+model.lmer.3<-lmer(insurgency ~ pop.l3  + proximitytoelection + parcomp + xconst + W.events.insurgency.l3 + (1 |country),data=in.sample,family="binomial")
+#
+model.lmer.3<-lmer(insurgency ~ pop.l3  + proximitytoelection + parcomp + xconst + W.events.insurgency.l3 + (1 +gdppc.l3 |country),data=in.sample,family="binomial")#
+summary(model.lmer.3)#
+in.lmer <- fitted(model.lmer.3)#
+out.lmer <- predict.lmer(model.lmer.3, newdata=out.sample)
+#
+model.glm.simple<-glm(insurgency~ gdpgrowth.l3 +pop.l3, family="binomial",data=in.sample)#
+summary(model.glm.simple)#
+in.glm <- fitted(model.glm.simple)#
+out.glm <- predict(model.glm.simple, type="response", newdata=out.sample)
+#
+###### SAE model#
+#
+library(foreign)#
+setwd("/Volumes/ICEWS Project/BMA Stuffs/ICEWS_files/")#
+SAE.data <- read.dta("ICEWS2.build3.month.16sep2010.dta")#
+#
+SAE.in.sample<-SAE.data[ SAE.data$year>=1999 & SAE.data$year<=2008,] # 1999-2008#
+SAE.out.sample<-SAE.data[  SAE.data$year==2009 |SAE.data$year==2010  ,] #2009-2010#
+#
+SAE.model <- glm(GTDSinsurgency ~ L6muslimsScooptotals + L6allmuslimsSviolence + L6Sallmuslimsviolence +#
+           L6separatistsAllhosttotals + L6JIAllhosttotals + L6GDhosttotals + L6Ginsurgentshosttotals +#
+           L6Ginsurgentshosttotals2 + L6intrapolpartycooptotals + L6intrapolpartycooptotals2 +#
+           L6orgmuslimsAllhosttotals + L6orgmuslimsAllhosttotals2 + L6insurgentsAllhosttotals +#
+           L6insurgentsAllhosttotals2 + L12margroups + L12state + L12state2 + L12ethnfrac + L12ethnfracstate +#
+           L12ethnfracstate2 + L12imp_GDPcurUS + L12imp_GDPcurUS2 + L12lnpop + L12imp_relfrac + L12imp_relfrac2 +#
+           L12imp_relfracstate + L12imp_relfracstate2,#
+           data = SAE.in.sample, family=binomial(link="logit"), na.action="na.exclude")#
+#
+in.SAE <- fitted(SAE.model)#
+out.SAE <- predict(SAE.model, newdata = SAE.out.sample, type="response")
+#
+#1) Make a data frame consisting of Duke predictions, Countryname, year, month, dv: In-sample/Outsample#
+#2) Make a data frame consisting of SAE predictions, Countryname, year, month: In-sample/Outsample#
+#3) Merge together#
+#
+#
+# Make Duke datasets#
+#
+#
+Duke.in.pred <- data.frame(in.glm,in.lmer, as.character(in.sample$country), in.sample$year, in.sample$month, in.sample$insurgency, stringsAsFactors=FALSE)#
+names(Duke.in.pred)<-c("Glm.simple", "Lmer","Country", "Year", "Month", "Insurgency")#
+#
+Duke.out.pred <- data.frame(out.glm,out.lmer, as.character(out.sample$country), out.sample$year, out.sample$month, out.sample$insurgency, stringsAsFactors=FALSE)#
+names(Duke.out.pred)<-c("Glm.simple","Lmer", "Country", "Year", "Month", "Insurgency")#
+#
+#
+# Make SAE data frames#
+#
+SAE.in.pred <- data.frame(in.SAE, SAE.in.sample$country, SAE.in.sample$year, SAE.in.sample$month, stringsAsFactors=FALSE)#
+names(SAE.in.pred) <- c("SAE", "Country", "Year", "Month")#
+#
+SAE.out.pred <- data.frame(out.SAE, SAE.out.sample$country, SAE.out.sample$year, SAE.out.sample$month, stringsAsFactors=FALSE)#
+names(SAE.out.pred) <- c("SAE", "Country", "Year", "Month")#
+#
+#
+# Merge them together#
+#
+SAE.in.pred$Country<-toupper(SAE.in.pred$Country)#
+Duke.in.pred$Country<-toupper(Duke.in.pred$Country)#
+SAE.out.pred$Country<-toupper(SAE.out.pred$Country)#
+Duke.out.pred$Country<-toupper(Duke.out.pred$Country)#
+#
+my.replace.fun<-function(BAD, GOOD){#
+  SAE.in.pred$Country[SAE.in.pred$Country ==BAD]<<-GOOD#
+  SAE.out.pred$Country[SAE.out.pred$Country ==BAD]<<-GOOD#
+  Duke.in.pred$Country[Duke.in.pred$Country ==BAD]<<-GOOD#
+  Duke.out.pred$Country[Duke.out.pred$Country ==BAD]<<-GOOD#
+ }#
+#
+my.replace.fun("NEW_ZEALAND", "NEW ZEALAND")#
+my.replace.fun("NORTH_KOREA", "NORTH KOREA")#
+my.replace.fun("PAPUA_NEW_GUINEA", "PAPUA NEW GUINEA")#
+my.replace.fun("SOLOMIN_ISLANDS", "SOLOMIN ISLANDS")#
+my.replace.fun("SOLOMIN IS.", "SOLOMIN ISLANDS")#
+my.replace.fun("SOUTH_KOREA", "SOUTH KOREA")#
+my.replace.fun("SRI_LANKA", "SRI LANKA")#
+my.replace.fun("BURMA", "MYANMAR")#
+my.replace.fun("SOLOMON_ISLANDS", "SOLOMIN ISLANDS")#
+my.replace.fun("SOLOMON IS.", "SOLOMIN ISLANDS")#
+#
+Total.in.pred <- merge(Duke.in.pred, SAE.in.pred, by=c("Country", "Year", "Month"))#
+Total.out.pred <- merge(Duke.out.pred, SAE.out.pred, by=c("Country", "Year", "Month"))#
+#
+#### Output to memory#
+#
+setwd("/Volumes/ICEWS Project/BMA Stuffs/ICEWS_files/")#
+write.csv(Total.in.pred, file="Insample.csv", row.names=FALSE)#
+write.csv(Total.out.pred, file="Outsample.csv", row.names=FALSE)
+library(lme4)#
+setwd("/Volumes/ICEWS Project/BMA Stuffs/ICEWS_files/")#
+dataICEWS<-read.csv(file="dataICEWS.csv")#
+#
+summary(dataICEWS)#
+#
+in.sample <- dataICEWS[dataICEWS$year>=1999 & dataICEWS$year<=2008,] # 1999-2008#
+out.sample <- dataICEWS[dataICEWS$year==2009| dataICEWS$year==2010,] # 2009-2010
+#
+model.lmer.3<-lmer(insurgency ~ pop.l3  + proximitytoelection + parcomp + xconst + W.events.insurgency.l3 + (1 +gdppc.l3 |country),data=in.sample,family="binomial")
+#
+model.lmer.3<-lmer(insurgency ~ pop.l3  + proximitytoelection + parcomp + xconst + W.events.insurgency.l3 + (1 +gdpgrowth.l3 |country),data=in.sample,family="binomial")

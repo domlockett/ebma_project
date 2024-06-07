@@ -1,0 +1,12 @@
+Package: Ensemble.ICEWS
+Type: Package
+Title: Predicted Probability BMA for Logit
+Version: 1.11
+Date: 2011-05-17
+Author: Michael D. Ward and Jacob M. Montgomery
+Maintainer: Jacob Montgomery <jmm61@duke.edu>
+Description: Ensemble BMA for logistic regression
+License: none
+Depends: ICEWS2
+LazyLoad: yes
+

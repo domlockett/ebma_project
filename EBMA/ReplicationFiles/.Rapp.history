@@ -1,0 +1,454 @@
+siskel_con=(siskel=="con")
+siskel_mixed=(siskel=="mixed")
+siskel_pro=(siskel=="pro")
+ebert_con=(ebert=="con")
+ebert_mixed=(ebert=="mixed")
+ebert_pro=(ebert=="pro")
+imixed=(siskel=="mixed")*(ebert=="mixed")
+ipro=(siskel=="pro")*(ebert=="pro")
+siskel_con
+siskel_mixed
+siskel_pro
+ebert_con
+ebert_mixed
+ebert_pro
+imixed
+ipro
+symm3=3*(siskel=="pro")*(ebert=="pro")
+symm1=1*(siskel=="con")*(ebert=="con")
+symm4=4*(siskel=="mixed")*(ebert=="con")+4*(siskel=="con")*(ebert=="mixed")
+symm6=6*(siskel=="con")*(ebert=="pro")+6*(siskel=="pro")*(ebert=="con")
+symm2=2*(siskel=="mixed")*(ebert=="mixed")
+symm5=5*(siskel=="mixed")*(ebert=="pro")+5*(siskel=="pro")*(ebert=="mixed")
+symm3
+symm1
+symm4
+symm6
+symm2
+symm5
+movies=data.frame(siskel,ebert,count,icon,imixed,ipro,symm)
+table=xtabs(count~siskel+ebert)
+table
+Contingency_Table=list(Frequency=table,Percent=prop.table(table),RowPct=prop.table(table,1),ColPct=prop.table(table,2))
+Contingency_Table
+model=glm(count~symm1+symm4+symm6+symm2+symm5+symm3,family=poisson(link=log))
+summary(model)
+model=glm(count~-1+symm1+symm4+symm6+symm2+symm5+symm3,family=poisson(link=log))
+summary(model)
+model=glm(count~-1+siskel_con+siskel_mixed+siskel_pro+ebert_con+ebert_mixed+ebert_pro+ebert+symm1+symm4+symm6+symm2+symm5+symm3,family=poisson(link=log))
+summary(model)
+fit.qsymm<-glm(count~-1+first+second+symm1,family=poisson(log))
+fit.qsymm<-glm(count~-1+first+second+sym1,family=poisson(log))
+sym1<-c(1,2,3,4,5,2,6,7,8,9,3,7,10,11,12,4,8,11,13,14,5,9,12,14,15)
+sym1<-factor(sym1)
+first<-c(1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5)
+second<-c(rep(1,5),rep(2,5),rep(3,5),rep(4,5),rep(5,5))
+fit.qsymm<-glm(count~-1+first+second+sym1,family=poisson(log))
+count<-c(93,9,17,6,10,17,46,11,4,4,44,11,155,9,12,7,0,9,15,2,10,9,12,2,27)
+fit.qsymm<-glm(count~-1+first+second+sym1,family=poisson(log))
+summary(fit.qsymm)
+table.q<-matrix(fitted(fit.qsymm), ncol = 5, byrow = T, dimnames = list(levels(first),  levels(second)))
+table.q
+summary(fit.qsymm)
+#
+first<-c(1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5)#
+second<-c(rep(1,5),rep(2,5),rep(3,5),rep(4,5),rep(5,5))#
+count<-c(93,9,17,6,10,17,46,11,4,4,44,11,155,9,12,7,0,9,15,2,10,9,12,2,27)#
+symm<-paste(as.numeric(first),as.numeric(second),sep=",")#
+symm<-as.factor(symm)#
+sym1<-c(1,2,3,4,5,2,6,7,8,9,3,7,10,11,12,4,8,11,13,14,5,9,12,14,15)#
+sym1<-factor(sym1) #
+options(contrasts = c("contr.treatment", "contr.poly")) #
+fit.symm <- glm(count ~-1 + sym1, family = poisson(log))#
+summary(fit.symm)#
+table<-matrix(fitted(fit.symm), ncol = 5, byrow = T, dimnames = list(levels(first),  levels(second))) #
+table
+fit.qsymm<-glm(count~-1+symm,family=poisson(log))
+summary(fit.qsymm)
+siskel=rep(c("con","mixed","pro"),c(3,3,3))#
+ebert=rep(c("con","mixed","pro"),3)#
+count=c(24,8,13,8,13,11,10,9,64)#
+siskel=factor(siskel)#
+ebert=factor(ebert)#
+#
+### Create indicator variables for each diagonal cell#
+icon=(siskel=="con")*(ebert=="con")#
+siskel_con=(siskel=="con")#
+siskel_mixed=(siskel=="mixed")#
+siskel_pro=(siskel=="pro")#
+ebert_con=(ebert=="con")#
+ebert_mixed=(ebert=="mixed")#
+ebert_pro=(ebert=="pro")#
+imixed=(siskel=="mixed")*(ebert=="mixed")#
+ipro=(siskel=="pro")*(ebert=="pro")#
+symm3=3*(siskel=="pro")*(ebert=="pro")#
+symm1=1*(siskel=="con")*(ebert=="con")#
+symm4=4*(siskel=="mixed")*(ebert=="con")+4*(siskel=="con")*(ebert=="mixed")#
+symm6=6*(siskel=="con")*(ebert=="pro")+6*(siskel=="pro")*(ebert=="con")#
+symm2=2*(siskel=="mixed")*(ebert=="mixed")#
+symm5=5*(siskel=="mixed")*(ebert=="pro")+5*(siskel=="pro")*(ebert=="mixed")#
+#
+### generate dataset movies#
+movies=data.frame(siskel,ebert,count,icon,imixed,ipro,symm)
+siskel
+ebert
+count
+icon
+imixed
+ipro
+symm
+symm3
+table=xtabs(count~siskel+ebert)
+table
+symm1
+symm2
+symm3
+symm4
+ebert
+siskel
+first<-c(1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5)#
+second<-c(rep(1,5),rep(2,5),rep(3,5),rep(4,5),rep(5,5))#
+count<-c(93,9,17,6,10,17,46,11,4,4,44,11,155,9,12,7,0,9,15,2,10,9,12,2,27)#
+symm<-paste(as.numeric(first),as.numeric(second),sep=",")#
+symm<-as.factor(symm)#
+sym1<-c(1,2,3,4,5,2,6,7,8,9,3,7,10,11,12,4,8,11,13,14,5,9,12,14,15)#
+sym1<-factor(sym1) #
+options(contrasts = c("contr.treatment", "contr.poly")) #
+fit.symm <- glm(count ~-1 + sym1, family = poisson(log))#
+summary(fit.symm)#
+table<-matrix(fitted(fit.symm), ncol = 5, byrow = T, dimnames = list(levels(first),  levels(second))) #
+table#
+#
+#
+#
+#
+#quasi-sym#
+fit.qsymm<-glm(count~-1+first+second+sym1,family=poisson(log))#
+summary(fit.qsymm)#
+#
+table.q<-matrix(fitted(fit.qsymm), ncol = 5, byrow = T, dimnames = list(levels(first),  levels(second))) #
+table.q
+summary(fit.qsymm)
+fit.qsymm<-glm(count~1+first+second+sym1,family=poisson(log))
+summary(fit.qsymm)
+summary(fit.symm)
+fit.qsymm<-glm(count~ -1+first+second+sym1,family=poisson(log))
+summary(fit.qsymm)
+fit.qsymm<-glm(count~ -1+second+sym1,family=poisson(log))
+summary(fit.qsymm)
+fit.qsymm<-glm(count~ 1+first+sym1,family=poisson(log))
+summary(fit.qsymm)
+sym1
+length(sym1)
+first<-as.factor(c(1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5))
+second<-as.factor(c(rep(1,5),rep(2,5),rep(3,5),rep(4,5),rep(5,5)))
+count<-c(93,9,17,6,10,17,46,11,4,4,44,11,155,9,12,7,0,9,15,2,10,9,12,2,27)
+sym1<-c(1,2,3,4,5,2,6,7,8,9,3,7,10,11,12,4,8,11,13,14,5,9,12,14,15)
+fit.symm <- glm(count ~-1 + sym1, family = poisson(log))
+summary(fit.symm)
+fit.qsymm<-glm(count~ 1+first+sym1,family=poisson(log))
+summary(fit.qsymm)
+sym1<-factor(sym1)
+fit.symm <- glm(count ~-1 + sym1, family = poisson(log))
+summary(fit.symm)
+fit.qsymm<-glm(count~ 1+first+sym1,family=poisson(log))
+summary(fit.qsymm)
+fit.qsymm<-glm(count~ -1+first+sym1,family=poisson(log))
+summary(fit.qsymm)
+table.q<-matrix(fitted(fit.qsymm), ncol = 5, byrow = T, dimnames = list(levels(first),  levels(second)))
+table.q
+summary(fit.qsymm)
+first<-as.factor(c(1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5))#
+second<-as.factor(c(rep(1,5),rep(2,5),rep(3,5),rep(4,5),rep(5,5)))#
+count<-c(93,9,17,6,10,17,46,11,4,4,44,11,155,9,12,7,0,9,15,2,10,9,12,2,27)#
+symm<-paste(as.numeric(first),as.numeric(second),sep=",")#
+symm<-as.factor(symm)#
+sym1<-c(1,2,3,4,5,2,6,7,8,9,3,7,10,11,12,4,8,11,13,14,5,9,12,14,15)#
+sym1<-factor(sym1) #
+options(contrasts = c("contr.treatment", "contr.poly")) #
+fit.symm <- glm(count ~-1 + sym1, family = poisson(log))#
+summary(fit.symm)#
+Ds<-
+22.473
+Marg_hom<-Ds-Dqs
+Dqs<-9.974
+Marg_hom<-Ds-Dqs
+help(waldtest)
+library(lmtest)
+help(waldtest)
+pchisq(Marg_hom,df=4,lower.tail=F)
+pchisq(240,df=3,lower.tail=F)
+dummies<-matrix(c(1,rep(0,24)))
+dummies
+ipro
+icon
+imixed
+one<-c(1,rep(0,24))
+two<-c(rep(0,6),1,rep(0,18))
+three<-c(rep(0,12),1,rep(0,12))
+four<-c(rep(0,18),1,rep(0,6))
+five<-c(rep(0,24),1)
+fit.qind<-glm(count~ -1+first+ second +one+two+three+four+five ,family=poisson(log))
+summary(fit.qind)
+#
+first<-as.factor(c(1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5))#
+second<-as.factor(c(rep(1,5),rep(2,5),rep(3,5),rep(4,5),rep(5,5)))#
+count<-c(93,9,17,6,10,17,46,11,4,4,44,11,155,9,12,7,0,9,15,2,10,9,12,2,27)#
+symm<-paste(as.numeric(first),as.numeric(second),sep=",")#
+symm<-as.factor(symm)#
+sym1<-c(1,2,3,4,5,2,6,7,8,9,3,7,10,11,12,4,8,11,13,14,5,9,12,14,15)#
+sym1<-factor(sym1) #
+options(contrasts = c("contr.treatment", "contr.poly")) #
+fit.symm <- glm(count ~-1 + sym1, family = poisson(log))#
+summary(fit.symm)#
+Ds<-22.473#
+table<-matrix(fitted(fit.symm), ncol = 5, byrow = T, dimnames = list(levels(first),  levels(second))) #
+table
+fit.symm$resid
+xtable(fit.symm$resid)
+library(xtable)
+xtable(fit.symm$resid)
+xtable(table)
+table<-matrix(fitted(fit.symm), ncol = 5, byrow = T, dimnames = list(levels(first),  levels(second))) #
+xtable(table)
+table<-matrix(fitted(fit.symm), ncol = 5, byrow = T, dimnames = list(c("High Point","Taster's Choice","Sanka","Nescafe","Brim"),c("High Point","Taster's Choice","Sanka","Nescafe","Brim")) )
+xtable(table)
+fit.symm$resid
+fit.symm$resid[,1]
+fit.symm$resid[1]
+fit.symm$resid[1,]
+fit.symm$resid
+residuals<-fit.symm$resid
+residuals
+xtable(residuals)
+residuals<-fit.symm$resid[[1]]
+residuals
+residuals<-fit.symm$resid[[]]
+residuals<-fit.symm$resid[[1,]]
+fit.symm$resid[[1]]
+fit.symm$resid[[2]]
+fit.symm$resid[[,2]]
+residuals<-NULL
+residuals<-NULL#
+for(i in 1:25){#
+residuals[i]<-fit.symm$resid[[i]]#
+}
+residuals
+table.resid<-matrix(residuals, ncol = 5, byrow = T, dimnames = list(c("High Point","Taster's Choice","Sanka","Nescafe","Brim"),c("High Point","Taster's Choice","Sanka","Nescafe","Brim")) )
+xtable(table.resid)
+table.q<-matrix(fitted(fit.qsymm), ncol = 5, byrow = T, dimnames = list(c("High Point","Taster's Choice","Sanka","Nescafe","Brim"),c("High Point","Taster's Choice","Sanka","Nescafe","Brim")))
+xtable(table.q)
+fit.qsymm<-glm(count~ -1+first+sym1,family=poisson(log))
+summary(fit.qsymm)
+#
+table.q<-matrix(fitted(fit.qsymm), ncol = 5, byrow = T, dimnames = list(c("High Point","Taster's Choice","Sanka","Nescafe","Brim"),c("High Point","Taster's Choice","Sanka","Nescafe","Brim"))) #
+xtable(table.q)
+#
+fit.qind<-glm(count~ -1+first+ second +one+two+three+four+five ,family=poisson(log))#
+summary(fit.qind)
+table.resid<-matrix(count-fitted(fit.symm), ncol = 5, byrow = T, dimnames = list(c("High Point","Taster's Choice","Sanka","Nescafe","Brim"),c("High Point","Taster's Choice","Sanka","Nescafe","Brim")) )
+xtable(table.resid)
+summary(fit.qsymm)
+summary(fit.symm)
+Ds<-22.473
+Dqs<-9.974
+Marg_hom<-Ds-Dqs
+Marg_hom
+pchisq(Marg_hom,df=4,lower.tail=F)
+#
+fit.qind<-glm(count~ -1+first+ second +one+two+three+four+five ,family=poisson(log))#
+summary(fit.qind)
+xtable(fit.qind)
+summary(fit.qind)
+table.q<-matrix(fitted(fit.qind), ncol = 5, byrow = T, dimnames = list(c("High Point","Taster's Choice","Sanka","Nescafe","Brim"),c("High Point","Taster's Choice","Sanka","Nescafe","Brim")))
+table.q
+exp(1.62+0.78)
+library(icews3)
+demo(crisisdomestic)
+library(afgsplit)
+help(afgsplit)
+demo(afgsplit)
+help(afgsplit)
+demo(split)
+library(afgtensor)
+y
+Y
+library(afgtensor)
+help(afgtensor)
+demo(tensor)
+demo(tensor, ask=FALSE)
+demo(tensor)
+demo(tensor, ask=FALSE)
+set.seed(40)
+demo(tensor)
+set.seed(50)
+demo(tensor)
+demo(tensor, ask=FALSE)
+set.seed(130)
+demo(tensor, ask=FALSE)
+help(tensor)
+help(afgtensor)
+ data(afgdata)
+data(afgdistricts)
+prv.cood<-coordinates(afgprovinces)
+coords <- coordinates(afgdistricts)
+neighbor<-poly2nb(afgdistricts)
+n.mat<-nb2mat(neighbor, glist=NULL, style="W")
+ tdata<-cbind(afgdata$sigactcount,afgdata$usaidcount,afgdata$witscount,afgdata$afghaneventcount)
+ district.aggr<-aggregate(tdata,list(afgdata$districtid,afgdata$year,afgdata$month),sum, na.rm=TRUE)
+ colnames(district.aggr)<-c("Group.1","Group.2","Group.3","sigactcount","usaidcount","witscount","afghancount")
+ #because of data constraints we only focus on 2010 and 4 data sets
+ info.sic<-subset(district.aggr, Group.2==2010)
+ info.sic$sigactcount[is.na(info.sic$sigactcount)]<-0
+ info.sic$usaidcount[is.na(info.sic$usaidcount)]<-0
+ info.sic$witscount[is.na(info.sic$witscount)]<-0
+ info.sic$afghancount[is.na(info.sic$afghancount)]<-0
+ Zone3w <- array(c(info.sic$sigactcount,info.sic$usaidcount,info.sic$witscount,info.sic$afghancount), c(364, 12, 4))
+ Zone3w.PTA3 <- PTA3(Zone3w, nbPT = 3, nbPT2 = 1, minpct=0.1)
+ summary(Zone3w.PTA3, testvar = 0.01)
+ n.mat.r<-n.mat[info.sic$Group.1[info.sic$Group.3==12],info.sic$Group.1[info.sic$Group.3==12]]
+ Zvm<-CONTRACTION(Zone3w,rep(1,12),Xwiz=2,zwiX=1)
+Zvm<-CONTRACTION(Zone3w,rep(1,12),Xwiz=2,zwiX=1)
+Wly<-CauRuimet(Zvm, ker=2, m0=n.mat.r,withingroup=TRUE,loc=substitute(apply(Z,2,mean,trim=0.1)),matrixmethod=TRUE)
+Wlv<-Powmat(Wly,-1)
+Zone3w.r<-list("data"=Zone3w, "met"=list(1,1,Wlv))
+Zone3w.r.PTA3<-PTA3(Zone3w.r, nbPT = 3, nbPT2 = 1, minpct=0.1,modesnam=c("space","time","indicator"),addedcomment="PTA3-modes metric Wly yearly")
+help(PTA3)
+Zone3w.r.PTA3<-PTA3(Zone3w.r, nbPT = 3, nbPT2 = 1, minpct=0.1,modesnam=c("space","time","indicator"),addedcomment="PTA3-modes metric Wly yearly",smoothing=FALSE)
+Zone3w.r.PTA3<-PTA3(Zone3w.r, nbPT = 3, nbPT2 = 1, minpct=0.1,modesnam=c("space","time","indicator"),addedcomment="PTA3-modes metric Wly yearly",smoothing=TRUE)
+Zone3w.r.PTA3<-PTA3(Zone3w.r, nbPT = 3, nbPT2 = 1, minpct=0.1,modesnam=c("space","time","indicator"),addedcomment="PTA3-modes metric Wly yearly")
+Zone3w.r.PTA3<-PTA3(Zone3w.r, nbPT = 3, nbPT2 = 1, minpct=0.1,modesnam=c("space","time","indicator"))
+library(afgtensor)
+#
+#Get the data#
+ data(afgdata)#
+#
+data(afgdistricts)#
+#
+data(afgprovinces)#
+#
+#Prepare coordinates of shapefiles#
+prv.cood<-coordinates(afgprovinces)#
+#
+coords <- coordinates(afgdistricts)#
+#
+#Prepare spatial W matrix#
+neighbor<-poly2nb(afgdistricts)#
+#
+n.mat<-nb2mat(neighbor, glist=NULL, style="W")#
+#
+#create a matrix that includes the datasets of interest#
+ tdata<-cbind(afgdata$sigactcount,afgdata$usaidcount,afgdata$witscount,afgdata$afghaneventcount)#
+#
+ #aggregate this data to the district/year/month level#
+ district.aggr<-aggregate(tdata,list(afgdata$districtid,afgdata$year,afgdata$month),sum, na.rm=TRUE)#
+#
+ #give colnames to the resulting matrix#
+ colnames(district.aggr)<-c("Group.1","Group.2","Group.3","sigactcount","usaidcount","witscount","afghancount")#
+#
+ #because of data constraints we only focus on 2010 and 4 data sets#
+ info.sic<-subset(district.aggr, Group.2==2010)#
+#
+ info.sic$sigactcount[is.na(info.sic$sigactcount)]<-0
+#
+ info.sic$usaidcount[is.na(info.sic$usaidcount)]<-0#
+#
+ info.sic$witscount[is.na(info.sic$witscount)]<-0#
+#
+ info.sic$afghancount[is.na(info.sic$afghancount)]<-0#
+#
+ #to run PTA3 it is necessary to create an array#
+ Zone3w <- array(c(info.sic$sigactcount,info.sic$usaidcount,info.sic$witscount,info.sic$afghancount), c(364, 12, 4)) #
+#
+ #run the basic PTA3#
+ Zone3w.PTA3 <- PTA3(Zone3w, nbPT = 3, nbPT2 = 1, minpct=0.1)#
+#
+#
+ summary(Zone3w.PTA3, testvar = 0.01)#
+#
+#
+ n.mat.r<-n.mat[info.sic$Group.1[info.sic$Group.3==12],info.sic$Group.1[info.sic$Group.3==12]]#
+#
+ #run the PTA3 accounting for spatial clustering#
+ #
+Zvm<-CONTRACTION(Zone3w,rep(1,12),Xwiz=2,zwiX=1)#
+#
+Wly<-CauRuimet(Zvm, ker=2, m0=n.mat.r,withingroup=TRUE,loc=substitute(apply(Z,2,mean,trim=0.1)),matrixmethod=TRUE)#
+#
+Wlv<-Powmat(Wly,-1)#
+#
+Zone3w.r<-list("data"=Zone3w, "met"=list(1,1,Wlv))#
+#
+Zone3w.r.PTA3<-PTA3(Zone3w.r, nbPT = 3, nbPT2 = 1, minpct=0.1,modesnam=c("space","time","indicator"))
+summary(Zone3w.r.PTA3)
+Zone3w.r.PTA3<-PTA3(Zone3w.r, nbPT = 3, nbPT2 = 1, minpct=0.1,modesnam=c("space","time","indicator"))
+library(ICEWS3)
+library(icews3)
+#
+## Montgomery, Hollendbach, and Ward#
+## Replication files necessary for replicating#
+## Table 3,  Footnote 21, Table 4, and  Figure 3#
+## Last edited: Jacob M. Montgomery#
+## Date: 12-19-2011#
+#
+# You will want to replace this line with the appropriate directory#
+setwd("/Users/florianhollenbach/Dropbox/EBMA/PRESIDENTIAL DATA for Jacob/Final submission")#
+library(foreign)#
+library(nls2)#
+library(ensembleBMA)
+#
+hibbspreds <- read.csv("Prediction_hibbs.csv") # Hibbs predictive intervals generated in Stata.  See *.do file.#
+master.data<-read.csv("presdata.csv") # read in data
+hibbspreds
+tyn = 15, a = 1, train.years =  10, hibbpreds=hibbspreds
+tyn = 15
+ a = 1
+train.years =  10
+hibbpreds=hibbspreds
+master.years <- seq(1952, 2008, by=4)#
+   in.data <- matrix(NA, (tyn-1), 6)#
+   out.data <- matrix(NA, 1, 6)#
+   rownames(in.data) <- master.years[1:(tyn-1)]#
+   rownames(out.data) <- master.years[tyn]#
+   colnames(out.data) <- colnames(in.data) <- c("Campbell", "Lewis-Beck", "EWT2C2", "Fair", "Hibbs", "Abramowitz")#
+   in.master <- master.data[master.data$year >=1952 & master.data$year<master.years[tyn],] #Validation period#
+   out.master <- master.data[master.data$year == master.years[tyn],] # T
+ c.model <- lm(dv~septpoll+gdpqtr2half, data=master.data[master.data$year<master.years[tyn],]) #Training period#
+   in.data[,1] <- predict(c.model, newdata=in.master) # Validation Period#
+   out.data[,1] <- predict(c.model, newdata=out.master) #Test Period#
+    #
+   lb.model <- lm(dv ~ julypop + incxgnp + jobhousu + closeinc, data=master.data[master.data$year<master.years[tyn],])#
+   in.data[,2] <- predict(lb.model, newdata=in.master)#
+   out.data[,2] <- predict(lb.model, newdata=out.master)#
+   #
+   ew.model <- lm(dv ~ l1cumleigrowth + incumbentpoll, data=master.data[master.data$year<master.years[tyn],])#
+   in.data[,3] <- predict(ew.model, newdata=in.master)#
+   out.data[,3] <- predict(ew.model, newdata=out.master)#
+#
+   fair.model <- lm(dv ~ G + P + Z + adper + adur + war + I, data=master.data[master.data$year<master.years[tyn],])#
+   in.data[,4] <- predict(fair.model, newdata=in.master)#
+   out.data[,4] <- predict(fair.model, newdata=out.master)#
+#
+   hibbs.model <- nls(dv ~ beta0 + bdlnr* (((1.0*wtq16*dnlr) + (g*dnlr.L1) + ((g^2)*dnlr.L2) + ((g^3)*dnlr.L3) +#
+                                             ((g^4)*dnlr.L4) + ((g^5)*dnlr.L5) + ((g^6)*dnlr.L6) + ((g^7)*dnlr.L7) +#
+                                             ((g^8)*dnlr.L8) + ((g^9)*dnlr.L9) + ((g^10)*dnlr.L10) + ((g^11)*dnlr.L11) +#
+                                             ((g^12)*dnlr.L12)+ ((g^13)*dnlr.L13)+ ((g^14)*dnlr.L14))/#
+                                            (1.0*wtq16 + g + g^2 + g^3 + g^3 + g^4 + g^5 + g^6 + g^7 + g^8 + g^9 +#
+                                             g^10 + g^11 + g^12 + g^13 + g^14)) + bkia*fatalities,#
+                      start=list(beta0=45, g=0.95, bdlnr=4, bkia=-0.1),#
+                      data=master.data[master.data$year<master.years[tyn],])#
+   in.data[,5] <- predict(hibbs.model, newdata=in.master)#
+   out.data[,5] <- predict(hibbs.model, newdata=out.master)
+ ab.model <- lm(dv~q2gdp+term+juneapp,data=master.data[master.data$year<master.years[tyn],])#
+   in.data[,6] <- predict(ab.model, newdata=in.master)#
+   out.data[,6] <- predict(ab.model, newdata=out.master)#
+#
+   # record the predictive invervals for each individual function#
+   sixseven <- matrix(nrow=6, ncol=2)#
+   sixseven[1,]=predict(c.model, newdata=out.master, interval="prediction", level=.67)[2:3]#
+   sixseven[2,]=predict(lb.model, newdata=out.master, interval="prediction", level=.67)[2:3]#
+   sixseven[3,]=predict(ew.model, newdata=out.master, interval="prediction", level=.67)[2:3]#
+   sixseven[4,]=predict(fair.model, newdata=out.master, interval="prediction", level=.67)[2:3]#
+   sixseven[5,]=c(hibbspreds$X66_low[hibbspreds$Year==master.years[tyn]], hibbspreds$X66_high[hibbspreds$Year==master.years[tyn]])
+sixseven
+   sixseven[6,]=predict(ab.model, newdata=out.master, interval="prediction", level=.67)[2:3]

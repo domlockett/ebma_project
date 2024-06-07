@@ -1,0 +1,48 @@
+This is BibTeX, Version 0.99d (TeX Live 2012)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: JOFSubmissionForWordCounts.aux
+The style file: chicago.bst
+Database file #1: Bibliography_EBMA.bib
+Warning--page numbers missing in MoellerEtAl:2012
+You've used 94 entries,
+            2861 wiz_defined-function locations,
+            1186 strings with 20046 characters,
+and the built_in function-call counts, 62006 in all, are:
+= -- 5224
+> -- 4306
+< -- 5
++ -- 1258
+- -- 1506
+* -- 5491
+:= -- 11458
+add.period$ -- 286
+call.type$ -- 94
+change.case$ -- 652
+chr.to.int$ -- 92
+cite$ -- 95
+duplicate$ -- 1664
+empty$ -- 3857
+format.name$ -- 1706
+if$ -- 11405
+int.to.chr$ -- 3
+int.to.str$ -- 0
+missing$ -- 85
+newline$ -- 473
+num.names$ -- 944
+pop$ -- 396
+preamble$ -- 1
+purify$ -- 1218
+quote$ -- 0
+skip$ -- 1758
+stack$ -- 0
+substring$ -- 3481
+swap$ -- 541
+text.length$ -- 5
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 1812
+warning$ -- 1
+while$ -- 947
+width$ -- 0
+write$ -- 1242
+(There was 1 warning)

@@ -1,0 +1,140 @@
+% EBMA paper for Political Analysis: Full (unblinded) version 
+% Written by: Jacob M. Montgomery, Florian Hollenbach, and Michael
+% D. Ward.
+% Last update on: 15/12/2011
+% Last updated : Florian & Mike
+
+
+%\documentclass[pdftex,12pt,fullpage,oneside,endnotes]{amsart}
+\documentclass[12pt,fullpage,endnotes]{article}
+
+\usepackage{array,amsmath,psfrag,amssymb,subfigure,tabularx}
+\usepackage{hyperref,multicol}
+\usepackage{pa}
+\usepackage{booktabs}
+%\usepackage{vmargin,boxedminipage}
+\usepackage[usenames]{color}
+\usepackage{datetime}
+\usepackage{dcolumn}
+\usepackage{wrapfig}
+\usepackage{setspace}
+\usepackage{url}
+\usepackage[english]{babel}
+\usepackage{times}
+\usepackage{multirow}
+\usepackage[pdftex]{graphicx}
+\usepackage{lscape}
+%\usepackage[top=1in,right=1in,left=1in,bottom=1in]{geometry}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{endnotes}
+
+%\graphicspath{ Project"/"NSF BMA"/graphics/}} % change to nsf
+\newcommand{\note}[1]{\endnote{\doublespacing#1 \vspace{4 mm}}}
+
+\usepackage{natbib}
+\bibpunct{(}{)}{;}{a}{}{,}
+\bibdata{Flo_Bib}
+
+\newboolean{blind}
+\setboolean{blind}{false}
+
+
+\title{Improving Predictions Using Ensemble \\ Bayesian Model
+  Averaging\thanks{For generously sharing their data and models with
+    us, we thank Alan Abramowitz, James Campbell, Robert Erikson, Ray
+    Fair, Douglas Hibbs, Michael Lewis-Beck, Andrew D. Martin, Kevin
+    Quinn, Stephen Shellman, Charles Tien, \& Christopher Wlezien.
+    This project was undertaken in the framework of an initiative
+    funded by the Information Processing Technology Office of the
+    Defense Advanced Research Projects Agency aimed at producing
+    models to provide an Integrated Crisis Early Warning Systems
+    (ICEWS) for decision makers in the U.S. defense community. The
+    holding grant is to the Lockheed Martin Corporation, Contract
+    FA8650-07-C-7749. All the bad ideas and mistakes are our own. 
+    We especially want to thank Adrian Raftery and Brendan Nyhan for their
+    encouragement and feedback as this project evolved. The editor and the reviewers of {\em Political Analysis}
+    provided especially salient and important suggestions that substantially improved our research. }}
+\author{
+Jacob M. Montgomery\\
+	Department of Political Science\\
+	Washington University in St. Louis\\
+	Campus Box 1063, One Brookings Drive\\
+	St. Louis, MO, USA, 63130-4899 
+	\and
+Florian Hollenbach  \\
+	Department of Political Science\\
+	Duke University\\
+	Perkins Hall 326 Box 90204\\
+	Durham, NC, USA, 27707-4330
+	\and
+Michael D. Ward\\
+	Department of Political Science\\
+	Duke University\\
+	Perkins Hall 326 Box 90204\\
+	Durham, NC, USA, 27707-4330\\
+	corresponding author: michael.d.ward@duke.edu
+} 
+
+
+
+
+\date{\today}
+
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\clearpage
+\pagestyle{myheadings}
+\markright{Montgomery, Hollenbach, \& Ward\hfill Ensemble BMA\hfill}
+\newpage
+\singlespacing
+
+\thispagestyle{empty}
+
+
+\begin{abstract}
+\begin{doublespace}
+\input{EBMASubmissionABSTRACT.tex}
+\end{doublespace}
+\end{abstract}
+
+\doublespacing
+\newpage
+
+%%% Insert all of the main text
+\setcounter{page}{1}
+\include{EBMASubmissionBody}
+
+
+
+
+%%Bib 
+\singlespacing
+\bibliographystyle{chicago}
+%\bibliography{Flo_Bib,masterEBMA}
+\bibliography{Flo_Bib}
+
+\theendnotes
+
+\newpage
+
+\listoffigures
+
+\input{EBMASubmissionTables}
+\clearpage
+\input{EBMASubmissionFigures}
+
+
+%\bibdata{"Volumes/"ICEWS Project"/"NSF BMA"/flo_Bib","/Volumes/"ICEWS Project"/"NSF BMA"/masterEBMA"}
+%\bibliography{/Users/mw160/Documents/BIBTEXFILES/predictionrefs/predictions2,/Users/mw160/Documents/BIBTEXFILES/2009mdwbib}}
+
+
+
+%Contact information for authors:
+
+\end{document}
+\bye

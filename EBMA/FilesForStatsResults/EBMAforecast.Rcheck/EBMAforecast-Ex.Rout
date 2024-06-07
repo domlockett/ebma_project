@@ -1,0 +1,111 @@
+
+R version 2.12.0 (2010-10-15)
+Copyright (C) 2010 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "EBMAforecast"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('EBMAforecast')
+Loading required package: separationplot
+Loading required package: MASS
+Loading required package: Hmisc
+Loading required package: survival
+Loading required package: splines
+
+Attaching package: 'Hmisc'
+
+The following object(s) are masked from 'package:survival':
+
+    untangle.specials
+
+The following object(s) are masked from 'package:base':
+
+    format.pval, round.POSIXt, trunc.POSIXt, units
+
+> 
+> assign(".oldSearch", search(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("EBMAforecast-package")
+> ### * EBMAforecast-package
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: EBMAforecast-package
+> ### Title: Ensemble BMA For Binary Dependent Variables
+> ### Aliases: EBMAforecast-package EBMAforecast
+> ### Keywords: package
+> 
+> ### ** Examples
+> 
+> demo(EBMAforecast)
+
+
+	demo(EBMAforecast)
+	---- ~~~~~~~~~~~~
+
+> # Ensemble.ICEWS demo file
+> #
+> # last updated 3/3/2011 by JMM
+> 
+> ##### New code here
+> 
+> data(Insample)
+
+> data(Outsample)
+
+> ################################################
+> # This is the analysis *WITHOUT* the ICEWS model
+> ################################################
+> 
+> in.data <- cbind(Insample[,"Polisci"], Insample[,"Glm.Econ"], Insample[,"Lmer3"], Insample[,"Glm.simple"],
++                  Insample[,"Lmer.all"], Insample[,"SAE"])
+
+> colnames(in.data)<-c("Polisci", "GLM.Econ", "Lmer3", "Glm.simple", "Lmer.all", "SAE")
+
+> out.data <- cbind(Outsample[,"Polisci"], Outsample[,"Glm.Econ"], Outsample[,"Lmer3"], Outsample[,"Glm.simple"],
++                  Outsample[,"Lmer.all"], Outsample[,"SAE"])
+
+> y.in <- Insample$Insurgency
+
+> y.out <- Outsample$Insurgency
+
+> # Fit the BMA Model
+> BMA.fit <- Ensemble.logit(y=y.in, pp.raw=in.data, tol=.001, exp=4)
+
+> # These are the within-sample model statistics/estimates for the parameters shown in the paper
+> print.Ensemble.logit(BMA.fit)
+           Weight Constant Predictor   AUC   PRE Brier % Correct
+Polisci     0.477    0.187     7.884 0.968 0.408 0.043      93.3
+GLM.Econ    0.000    0.613     8.322 0.608 0.000 0.099      88.6
+Lmer3       0.148    6.076    28.253 0.958 0.013 0.070      88.8
+Glm.simple  0.000    0.567     8.156 0.645 0.000 0.100      88.6
+Lmer.all    0.011    4.562    23.408 0.933 0.008 0.072      88.7
+SAE         0.364    0.038     7.463 0.956 0.481 0.043      94.1
+BMA           -        -         -   0.976 0.481 0.039      94.1
+                              
+Bias correction parameter = 4 
+                              
+Number of observations = 3480 
+
+> # Within-sample plots
+> plot.Ensemble.logit(BMA.fit)
+Error in separationplot(pred = obj$pred.prob, actual = obj$dv, heading = "BMA") : 
+  F used instead of FALSE
+Calls: demo ... eval.with.vis -> plot.Ensemble.logit -> separationplot
+Execution halted

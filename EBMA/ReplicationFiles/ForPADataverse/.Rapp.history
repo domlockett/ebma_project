@@ -1,0 +1,1095 @@
+tol=0.0001
+while(.done == FALSE & .iter<maxIter){#
+              .thisOut <- .em(outcomeCalibration=outcomeCalibration, prediction=predCalibrationAdj, W=W)#
+              W <- .thisOut$W#
+              LL <- .thisOut$LL#
+              .done <- abs(.emOld-LL)/(1+abs(LL))<tol#
+              .emOld <- LL#
+              .iter <- .iter+1#
+              print(.iter)#
+            }
+tol
+W
+ll
+.emOld
+log(LL)
+Z
+z.denom
+log(z.denom)
+z.denom <- z.denom/#
+                  aaply(prediction, 1, .fun=function(x) sum((!is.na(x)*1)*W))
+z.numerator <- aaply(prediction, 1, function(x){x*W})
+z.numerator
+prediction
+z.numerator.zero <- aaply(1-prediction, 1, function(x){x*W})
+EBMA for dom crisis models#
+#
+rm(list=ls(all=TRUE))#
+library(wicews) # package wicews_0.4.0#
+data(icews)#
+### MD model #
+icews$excluded<-round(icews$excl_groups_count.l1)#
+icews$ins.h.count.both.l1alt<-ifelse(icews$ins.h.count.both.l1>3,1,0)#
+icews$interaction1<-icews$AUTOC.l1*icews$ins.h.count.both.l1alt#
+icews$interaction2<-icews$excluded*icews$ins.h.count.both.l1alt#
+icews$interaction3<-icews$exclpop.l1*icews$ins.h.count.both.l1alt#
+icews$interaction4<-icews$exclpop.l1*icews$excluded#
+icews$reb.h.count.both.l1alt<-ifelse(icews$reb.h.count.both.l1>3,1,0)#
+icews$cutter<-ifelse(icews$dom.cris.l.count.l1>200,1,0)#
+icews$inter<-icews$DEMOC.l1*log(icews$ProxElection+1)#
+icews$inter2<-icews$DEMOC.l1*icews$ProxElection#
+icews$log<-log(icews$ProxElection+1)#
+icews$space<-log(icews$BX.KLT.DINV.CD.WD.l1-min(icews$BX.KLT.DINV.CD.WD.l1)+1)#
+icews$missX61.ZF<-ifelse(icews$missX61.ZF==0,1,0)#
+icews$tmm<-icews$DEMOC.l1*icews$X61...ZF...#
+icews$arr<-log(icews$FP.CPI.TOTL.l1)#
+icews$lgdpc.l1<-log(icews$NY.GDP.PCAP.KD.l1)#
+icews$lpop.l1<-log(icews$SP.POP.TOTL)#
+icews$events<-log(icews$dom.cris.lA.count.l1+1)#
+icews$elect<-log(icews$ProxElection+1)#
+icews$inf.l1 <- icews$X64...ZF....l1#
+model.dpc.1<-icewsest.lmer(dpc~PARREG.l1+XRREG.l1+XRCOMP.l1+inf.l1+W.gower.econ.dom.cris.h.count.l1+ProxElection.l1+(1+XCONST.l1|ccode), teststart="Jun11", header="Domestic Political Crisis Model 1")#
+## PV model#
+icews$events<-log(icews$dom.cris.lA.count.l1+1)#
+#
+### DPC Model Using EOI spatial temporal variables and DPC events ~0.81 Out of Sample AUC ####
+#
+model.dpc.2<-icewsest.lmer(dpc~events+W.centdist.std.insurgency.l1+W.centdist.std.rebellion.l1 + W.centdist.std.dom.cris.h.count.l1 +dom.cris.l.count.l1+PARREG.l1+XRREG.l1+XRCOMP.l1+W.gower.econ.dom.cris.h.count.l1+ProxElection.l1+(1|country), teststart="Jun11", header="Domestic Political Crisis Model 2")#
+##  SM#
+#
+icews$excluded<-round(icews$excl_groups_count.l1)#
+icews$ins.h.count.both.l1alt<-ifelse(icews$ins.h.count.both.l1>3,1,0)#
+icews$reb.h.count.both.l1alt<-ifelse(icews$reb.h.count.both.l1>3,1,0)#
+predict.data$reb.h.count.both.l1alt<-ifelse(predict.data$reb.h.count.both.l1>3,1,0)#
+predict.data$excluded<-round(predict.data$excl_groups_count.l1)#
+predict.data$ins.h.count.both.l1alt<-ifelse(predict.data$ins.h.count.both.l1>3,1,0)#
+icews$events<-log(icews$dom.cris.lA.count.l1+1)#
+predict.data$events<-log(predict.data$dom.cris.lA.count.l1+1)#
+icews$elect<-log(icews$ProxElection+1)#
+predict.data$elect<-log(predict.data$ProxElection+1)#
+#
+model.dpc.3<-icewsest.lmer(dpc ~ events +  W.gower.pol.dom.cris.h.count.l1 + ProxElection.l1 + W.gower.pol.reb.h.count.both.l1 +   W.gower.pol.ins.h.count.both.l1 + AUTOC + (1+XCONST.l1|ccode), teststart="Jun11", header="Domestic Political Crisis Model 3")#
+### BR#
+#
+icews$stateamnesty <- (icews$Amnesty.l1+icews$State.Dept..l1)/2#
+predict.data$stateamnesty <- (predict.data$Amnesty.l1+predict.data$State.Dept..l1)/2#
+icews$inclgrp <- ifelse(icews$egip_groups_count<=1,1,0)#
+predict.data$inclgrp <- ifelse(predict.data$egip_groups_count<=1,1,0)#
+icews$electiontime <- ifelse(icews$ProxElection.l1>=750,0,1)#
+predict.data$electiontime <- ifelse(predict.data$ProxElection.l1>=750,0,1)#
+icews$exclgrp <- ifelse(icews$excl_groups_count.l1>=3,1,0)#
+predict.data$exclgrp <- ifelse(predict.data$excl_groups_count.l1>=3,1,0)#
+#
+#EOI occurence#
+model.dpc.4<-icewsest.lmer(dpc~stateamnesty+inclgrp+electiontime+AUTOC.l1+W.knn4.std.reb.h.count.both.l1+(1+XCONST.l1|ccode), teststart="Jun11", header="Domestic Political Crisis Model 4")#
+## Mike#
+#
+icews$excluded<-round(icews$excl_groups_count.l1)#
+#
+icews$ins.h.count.both.l1alt<-ifelse(icews$ins.h.count.both.l1>3,1,0)#
+#
+icews$reb.h.count.both.l1alt<-ifelse(icews$reb.h.count.both.l1>3,1,0)#
+#
+predict.data$reb.h.count.both.l1alt<-ifelse(predict.data$reb.h.count.both.l1>3,1,0)#
+#
+predict.data$excluded<-round(predict.data$excl_groups_count.l1)#
+#
+predict.data$ins.h.count.both.l1alt<-ifelse(predict.data$ins.h.count.both.l1>3,1,0)#
+#
+icews$events<-log(icews$dom.cris.lA.count.l1+1)#
+#
+predict.data$events<-log(predict.data$dom.cris.lA.count.l1+1)#
+#
+icews$elect<-log(icews$ProxElection+1)#
+#
+predict.data$elect<-log(predict.data$ProxElection+1)#
+#
+model.dpc.5<-icewsest.lmer(dpc~events+PARREG.l1+XRREG.l1+XRCOMP.l1+W.gower.econ.dom.cris.h.count.l1+ProxElection.l1+(1+XCONST.l1|ccode), teststart="Jun11", header="Domestic Political Crisis Model 5")#
+insample.table1<-cbind(model.dpc.1$trainingset$ccode,model.dpc.1$trainingset$month.counter,model.dpc.1$in.pred,model.dpc.1$trainingset$dpc)#
+colnames(insample.table1)<-c("ccode","month.counter","in.pred.1", "truth")#
+outsample.table1<-cbind(model.dpc.1$testset$ccode,model.dpc.1$testset$month.counter,model.dpc.1$out.pred, model.dpc.1$testset$dpc)#
+colnames(outsample.table1)<-c("ccode","month.counter","out.pred.1","truth")#
+insample.table2<-cbind(model.dpc.2$trainingset$ccode,model.dpc.2$trainingset$month.counter,model.dpc.2$in.pred)#
+colnames(insample.table2)<-c("ccode","month.counter","in.pred.2")#
+outsample.table2<-cbind(model.dpc.2$testset$ccode,model.dpc.2$testset$month.counter,model.dpc.2$out.pred)#
+colnames(outsample.table2)<-c("ccode","month.counter","out.pred.2")#
+#
+insample.table3<-cbind(model.dpc.3$trainingset$ccode,model.dpc.3$trainingset$month.counter,model.dpc.3$in.pred)#
+colnames(insample.table3)<-c("ccode","month.counter","in.pred.3")#
+outsample.table3<-cbind(model.dpc.3$testset$ccode,model.dpc.3$testset$month.counter,model.dpc.3$out.pred)#
+colnames(outsample.table3)<-c("ccode","month.counter","out.pred.3")#
+#
+insample.table4<-cbind(model.dpc.4$trainingset$ccode,model.dpc.4$trainingset$month.counter,model.dpc.4$in.pred)#
+colnames(insample.table4)<-c("ccode","month.counter","in.pred.4")#
+outsample.table4<-cbind(model.dpc.4$testset$ccode,model.dpc.4$testset$month.counter,model.dpc.4$out.pred)#
+colnames(outsample.table4)<-c("ccode","month.counter","out.pred.4")#
+#
+insample.table5<-cbind(model.dpc.5$trainingset$ccode,model.dpc.5$trainingset$month.counter,model.dpc.5$in.pred)#
+colnames(insample.table5)<-c("ccode","month.counter","in.pred.5")#
+outsample.table5<-cbind(model.dpc.5$testset$ccode,model.dpc.5$testset$month.counter,model.dpc.5$out.pred)#
+colnames(outsample.table5)<-c("ccode","month.counter","out.pred.5")#
+#
+merge1.insam<-merge(insample.table1,insample.table2,by=c("ccode","month.counter"),all.x=TRUE,all.y=TRUE)#
+#
+merge2.insam<-merge(merge1.insam,insample.table3,by=c("ccode","month.counter"),all.x=TRUE,all.y=TRUE)#
+#
+merge3.insam<-merge(merge2.insam,insample.table4,by=c("ccode","month.counter"),all.x=TRUE,all.y=TRUE)#
+#
+insample<-merge(merge3.insam,insample.table5,by=c("ccode","month.counter"),all.x=TRUE,all.y=TRUE)#
+merge1.outsam<-merge(outsample.table1,outsample.table2,by=c("ccode","month.counter"),all.x=TRUE,all.y=TRUE)#
+#
+merge2.outsam<-merge(merge1.outsam,outsample.table3,by=c("ccode","month.counter"),all.x=TRUE,all.y=TRUE)#
+#
+merge3.outsam<-merge(merge2.outsam,outsample.table4,by=c("ccode","month.counter"),all.x=TRUE,all.y=TRUE)#
+#
+outsample<-merge(merge3.outsam,outsample.table5,by=c("ccode","month.counter"),all.x=TRUE,all.y=TRUE)
+this.ForecastData <- makeForecastData(.predCalibration=insample[,c("in.pred.1","in.pred.2","in.pred.3","in.pred.4","in.pred.5")],#
+                                      .outcomeCalibration=insample[,"truth"],#
+                                      .predTest=outsample[,c("out.pred.1","out.pred.2","out.pred.3","out.pred.4","out.pred.5")],#
+                                      .outcomeTest=outsample[,"truth"],#
+                                      .modelNames=c("model1","model2","model3","model4","model5"))
+.forecastData=this.ForecastData,  tol=1.490116e-08, maxIter=1e6, method="EM", exp=1, useModelParams=TRUE, predType="posteriorMedian"
+.forecastData=this.ForecastData#
+tol=1.490116e-08#
+maxIter=1e6#
+method="EM"#
+ exp=3#
+useModelParams=TRUE
+.predictCal <- function(x){#
+              .rawPred <- predict(x, type="response")#
+              .outPred <- rep(NA, nObsCal)#
+              .outPred[as.numeric(names(.rawPred))] <- .rawPred#
+              return(.outPred)#
+            }#
+#
+            .makeAdj <- function(x){#
+              .adjPred <- qlogis(x)#
+              .negative <- .adjPred<0#
+              .miss <- is.na(.adjPred)#
+              .negative[.miss] <- FALSE#
+              .adjPred <- ((1+abs(.adjPred))^(1/exp))-1#
+              .negative <- .adjPred<0#
+              .adjPred[.negative] <- .adjPred[.negative]*(-1)#
+              .adjPred[.miss] <- NA#
+              .adjPred#
+            }#
+            .modelFitter <- function(preds){#
+              .adjPred <- .makeAdj(preds)#
+              .thisModel <- glm(outcomeCalibration~.adjPred, family=binomial(link = "logit"))#
+              return(.thisModel)#
+            }#
+#
+            ##Extract data#
+            predCalibration <- getPredCalibration(.forecastData); outcomeCalibration <- getOutcomeCalibration(.forecastData)#
+            predTest <- getPredTest(.forecastData); outcomeTest <- getOutcomeTest(.forecastData)#
+            .testPeriod <- length(predTest)>0            #
+            modelNames <- getModelNames(.forecastData)#
+             ## Set constants#
+            nMod <-  ncol(predCalibration); nDraws <- dim(predCalibration)[3]#
+            nObsCal <- nrow(predCalibration); nObsTest <- nrow(predTest)#
+            ZERO<-1e-4#
+            ## Fit Models#
+            if(useModelParams==TRUE){.models <- aaply(predCalibration, 2:3, .fun=.modelFitter)}#
+#
+            ## Extract needed info#
+            if(nDraws==1 & useModelParams==TRUE){#
+              predCalibrationAdj <- aperm(array(laply(.models, .predictCal), dim=c(nMod, nObsCal, nDraws)), c(2,1,3))#
+              modelParams <- aperm(array(laply(.models, coefficients), dim=c(nMod, 2, nDraws)), c(2,1,3))#
+            }#
+            if(nDraws>1 & useModelParams==TRUE){ # This code is in development for exchangeability#
+              predCalibrationAdj <- aperm(aaply(.models, 1:2, .predictCal), c(3,1,2))#
+              modelParams <- aperm(aaply(.models, 1:2, coefficients), c(3,1,2))#
+            }#
+            if(useModelParams==FALSE){#
+              .adjPred <- .makeAdj(predCalibration)#
+              predCalibrationAdj <- .adjPred#
+              modelParams <- array(c(0,1), dim=c(2,nMod,nDraws))#
+            }#
+#
+            dimnames(modelParams) <- list(c("Constant", "Predictor"), modelNames, 1:nDraws)#
+            dimnames(predCalibrationAdj) <- list(1:nObsCal, modelNames, 1:nDraws)#
+#
+            ## Set initial values for parameters#
+            W <- rep(1/(nMod), nMod) ; names(W) <- modelNames#
+#
+            ## Run EM#
+            .done <- FALSE#
+            .iter <- 0#
+            .emOld<-0
+.em <- function(outcomeCalibration, prediction, W)#
+              {#
+                ## Step 1: Calculate the Z's#
+                z.numerator <- aaply(prediction, 1, function(x){x*W})#
+                z.numerator.zero <- aaply(1-prediction, 1, function(x){x*W})#
+                z.numerator[outcomeCalibration==0,] <- z.numerator.zero[outcomeCalibration==0,]#
+                z.denom <- aaply(z.numerator, 1, sum, na.rm=T)#
+                z.denom <- z.denom/#
+                  aaply(prediction, 1, .fun=function(x) sum((!is.na(x)*1)*W))#
+#
+                Z <-aperm(array(aaply(z.numerator, 2, function(x){x/z.denom}), dim=c(nMod, nObsCal, nDraws)), c(2,1,3))#
+#
+                ## Step 2: Calculat the W's#
+                .unnormalizedW<-aaply(Z, 2, sum, na.rm = TRUE)#
+                W <- .unnormalizedW#
+                W <- (W/rowSums(!colSums(prediction, na.rm=T)==0)) # the bottom here is the number of non-empty exchangeable draws for each model#
+                W <- W/sum(.unnormalizedW)#
+                W[W<ZERO]<-0#
+                names(W) <- modelNames#
+                ## Step 3: Calculate the log-likelihood#
+                LL <-sum(log(z.denom))#
+                ## Output: Log-liklihood, PP.W, and Model Weights#
+                out <- list(LL=LL, W=W)#
+                return(out)#
+              }
+while(.done == FALSE & .iter<maxIter){#
+              .thisOut <- .em(outcomeCalibration=outcomeCalibration, prediction=predCalibrationAdj, W=W)#
+              W <- .thisOut$W#
+              LL <- .thisOut$LL#
+              .done <- abs(.emOld-LL)/(1+abs(LL))<tol#
+              .emOld <- LL#
+              .iter <- .iter+1#
+              print(.iter)#
+            }#
+            if (.iter==maxIter){print("WARNING: Maximum iterations reached")}#
+            W <- W*rowSums(!colSums(predCalibration, na.rm=T)==0); names(W) <- modelNames
+EBMA for dom crisis models#
+#
+rm(list=ls(all=TRUE))#
+library(wicews) # package wicews_0.4.0#
+data(icews)#
+### MD model #
+icews$excluded<-round(icews$excl_groups_count.l1)#
+icews$ins.h.count.both.l1alt<-ifelse(icews$ins.h.count.both.l1>3,1,0)#
+icews$interaction1<-icews$AUTOC.l1*icews$ins.h.count.both.l1alt#
+icews$interaction2<-icews$excluded*icews$ins.h.count.both.l1alt#
+icews$interaction3<-icews$exclpop.l1*icews$ins.h.count.both.l1alt#
+icews$interaction4<-icews$exclpop.l1*icews$excluded#
+icews$reb.h.count.both.l1alt<-ifelse(icews$reb.h.count.both.l1>3,1,0)#
+icews$cutter<-ifelse(icews$dom.cris.l.count.l1>200,1,0)#
+icews$inter<-icews$DEMOC.l1*log(icews$ProxElection+1)#
+icews$inter2<-icews$DEMOC.l1*icews$ProxElection#
+icews$log<-log(icews$ProxElection+1)#
+icews$space<-log(icews$BX.KLT.DINV.CD.WD.l1-min(icews$BX.KLT.DINV.CD.WD.l1)+1)#
+icews$missX61.ZF<-ifelse(icews$missX61.ZF==0,1,0)#
+icews$tmm<-icews$DEMOC.l1*icews$X61...ZF...#
+icews$arr<-log(icews$FP.CPI.TOTL.l1)#
+icews$lgdpc.l1<-log(icews$NY.GDP.PCAP.KD.l1)#
+icews$lpop.l1<-log(icews$SP.POP.TOTL)#
+icews$events<-log(icews$dom.cris.lA.count.l1+1)#
+icews$elect<-log(icews$ProxElection+1)#
+icews$inf.l1 <- icews$X64...ZF....l1#
+model.dpc.1<-icewsest.lmer(dpc~PARREG.l1+XRREG.l1+XRCOMP.l1+inf.l1+W.gower.econ.dom.cris.h.count.l1+ProxElection.l1+(1+XCONST.l1|ccode), teststart="Jun11", header="Domestic Political Crisis Model 1")#
+## PV model#
+icews$events<-log(icews$dom.cris.lA.count.l1+1)#
+#
+### DPC Model Using EOI spatial temporal variables and DPC events ~0.81 Out of Sample AUC ####
+#
+model.dpc.2<-icewsest.lmer(dpc~events+W.centdist.std.insurgency.l1+W.centdist.std.rebellion.l1 + W.centdist.std.dom.cris.h.count.l1 +dom.cris.l.count.l1+PARREG.l1+XRREG.l1+XRCOMP.l1+W.gower.econ.dom.cris.h.count.l1+ProxElection.l1+(1|country), teststart="Jun11", header="Domestic Political Crisis Model 2")#
+##  SM#
+#
+icews$excluded<-round(icews$excl_groups_count.l1)#
+icews$ins.h.count.both.l1alt<-ifelse(icews$ins.h.count.both.l1>3,1,0)#
+icews$reb.h.count.both.l1alt<-ifelse(icews$reb.h.count.both.l1>3,1,0)#
+predict.data$reb.h.count.both.l1alt<-ifelse(predict.data$reb.h.count.both.l1>3,1,0)#
+predict.data$excluded<-round(predict.data$excl_groups_count.l1)#
+predict.data$ins.h.count.both.l1alt<-ifelse(predict.data$ins.h.count.both.l1>3,1,0)#
+icews$events<-log(icews$dom.cris.lA.count.l1+1)#
+predict.data$events<-log(predict.data$dom.cris.lA.count.l1+1)#
+icews$elect<-log(icews$ProxElection+1)#
+predict.data$elect<-log(predict.data$ProxElection+1)#
+#
+model.dpc.3<-icewsest.lmer(dpc ~ events +  W.gower.pol.dom.cris.h.count.l1 + ProxElection.l1 + W.gower.pol.reb.h.count.both.l1 +   W.gower.pol.ins.h.count.both.l1 + AUTOC + (1+XCONST.l1|ccode), teststart="Jun11", header="Domestic Political Crisis Model 3")#
+### BR#
+#
+icews$stateamnesty <- (icews$Amnesty.l1+icews$State.Dept..l1)/2#
+predict.data$stateamnesty <- (predict.data$Amnesty.l1+predict.data$State.Dept..l1)/2#
+icews$inclgrp <- ifelse(icews$egip_groups_count<=1,1,0)#
+predict.data$inclgrp <- ifelse(predict.data$egip_groups_count<=1,1,0)#
+icews$electiontime <- ifelse(icews$ProxElection.l1>=750,0,1)#
+predict.data$electiontime <- ifelse(predict.data$ProxElection.l1>=750,0,1)#
+icews$exclgrp <- ifelse(icews$excl_groups_count.l1>=3,1,0)#
+predict.data$exclgrp <- ifelse(predict.data$excl_groups_count.l1>=3,1,0)#
+#
+#EOI occurence#
+model.dpc.4<-icewsest.lmer(dpc~stateamnesty+inclgrp+electiontime+AUTOC.l1+W.knn4.std.reb.h.count.both.l1+(1+XCONST.l1|ccode), teststart="Jun11", header="Domestic Political Crisis Model 4")#
+## Mike#
+#
+icews$excluded<-round(icews$excl_groups_count.l1)#
+#
+icews$ins.h.count.both.l1alt<-ifelse(icews$ins.h.count.both.l1>3,1,0)#
+#
+icews$reb.h.count.both.l1alt<-ifelse(icews$reb.h.count.both.l1>3,1,0)#
+#
+predict.data$reb.h.count.both.l1alt<-ifelse(predict.data$reb.h.count.both.l1>3,1,0)#
+#
+predict.data$excluded<-round(predict.data$excl_groups_count.l1)#
+#
+predict.data$ins.h.count.both.l1alt<-ifelse(predict.data$ins.h.count.both.l1>3,1,0)#
+#
+icews$events<-log(icews$dom.cris.lA.count.l1+1)#
+#
+predict.data$events<-log(predict.data$dom.cris.lA.count.l1+1)#
+#
+icews$elect<-log(icews$ProxElection+1)#
+#
+predict.data$elect<-log(predict.data$ProxElection+1)#
+#
+model.dpc.5<-icewsest.lmer(dpc~events+PARREG.l1+XRREG.l1+XRCOMP.l1+W.gower.econ.dom.cris.h.count.l1+ProxElection.l1+(1+XCONST.l1|ccode), teststart="Jun11", header="Domestic Political Crisis Model 5")#
+insample.table1<-cbind(model.dpc.1$trainingset$ccode,model.dpc.1$trainingset$month.counter,model.dpc.1$in.pred,model.dpc.1$trainingset$dpc)#
+colnames(insample.table1)<-c("ccode","month.counter","in.pred.1", "truth")#
+outsample.table1<-cbind(model.dpc.1$testset$ccode,model.dpc.1$testset$month.counter,model.dpc.1$out.pred, model.dpc.1$testset$dpc)#
+colnames(outsample.table1)<-c("ccode","month.counter","out.pred.1","truth")#
+insample.table2<-cbind(model.dpc.2$trainingset$ccode,model.dpc.2$trainingset$month.counter,model.dpc.2$in.pred)#
+colnames(insample.table2)<-c("ccode","month.counter","in.pred.2")#
+outsample.table2<-cbind(model.dpc.2$testset$ccode,model.dpc.2$testset$month.counter,model.dpc.2$out.pred)#
+colnames(outsample.table2)<-c("ccode","month.counter","out.pred.2")#
+#
+insample.table3<-cbind(model.dpc.3$trainingset$ccode,model.dpc.3$trainingset$month.counter,model.dpc.3$in.pred)#
+colnames(insample.table3)<-c("ccode","month.counter","in.pred.3")#
+outsample.table3<-cbind(model.dpc.3$testset$ccode,model.dpc.3$testset$month.counter,model.dpc.3$out.pred)#
+colnames(outsample.table3)<-c("ccode","month.counter","out.pred.3")#
+#
+insample.table4<-cbind(model.dpc.4$trainingset$ccode,model.dpc.4$trainingset$month.counter,model.dpc.4$in.pred)#
+colnames(insample.table4)<-c("ccode","month.counter","in.pred.4")#
+outsample.table4<-cbind(model.dpc.4$testset$ccode,model.dpc.4$testset$month.counter,model.dpc.4$out.pred)#
+colnames(outsample.table4)<-c("ccode","month.counter","out.pred.4")#
+#
+insample.table5<-cbind(model.dpc.5$trainingset$ccode,model.dpc.5$trainingset$month.counter,model.dpc.5$in.pred)#
+colnames(insample.table5)<-c("ccode","month.counter","in.pred.5")#
+outsample.table5<-cbind(model.dpc.5$testset$ccode,model.dpc.5$testset$month.counter,model.dpc.5$out.pred)#
+colnames(outsample.table5)<-c("ccode","month.counter","out.pred.5")#
+#
+merge1.insam<-merge(insample.table1,insample.table2,by=c("ccode","month.counter"),all.x=TRUE,all.y=TRUE)#
+#
+merge2.insam<-merge(merge1.insam,insample.table3,by=c("ccode","month.counter"),all.x=TRUE,all.y=TRUE)#
+#
+merge3.insam<-merge(merge2.insam,insample.table4,by=c("ccode","month.counter"),all.x=TRUE,all.y=TRUE)#
+#
+insample<-merge(merge3.insam,insample.table5,by=c("ccode","month.counter"),all.x=TRUE,all.y=TRUE)#
+merge1.outsam<-merge(outsample.table1,outsample.table2,by=c("ccode","month.counter"),all.x=TRUE,all.y=TRUE)#
+#
+merge2.outsam<-merge(merge1.outsam,outsample.table3,by=c("ccode","month.counter"),all.x=TRUE,all.y=TRUE)#
+#
+merge3.outsam<-merge(merge2.outsam,outsample.table4,by=c("ccode","month.counter"),all.x=TRUE,all.y=TRUE)#
+#
+outsample<-merge(merge3.outsam,outsample.table5,by=c("ccode","month.counter"),all.x=TRUE,all.y=TRUE)#
+#library(EBMAforecast)#
+#
+this.ForecastData <- makeForecastData(.predCalibration=insample[,c("in.pred.1","in.pred.2","in.pred.3","in.pred.4","in.pred.5")],#
+                                      .outcomeCalibration=insample[,"truth"],#
+                                      .predTest=outsample[,c("out.pred.1","out.pred.2","out.pred.3","out.pred.4","out.pred.5")],#
+                                      .outcomeTest=outsample[,"truth"],#
+                                      .modelNames=c("model1","model2","model3","model4","model5"))#
+.forecastData=this.ForecastData#
+tol=0.001#
+maxIter=25000#
+method="EM"#
+exp=3#
+useModelParams=TRUE
+library(EBMAforecast)
+this.ForecastData <- makeForecastData(.predCalibration=insample[,c("in.pred.1","in.pred.2","in.pred.3","in.pred.4","in.pred.5")],#
+                                      .outcomeCalibration=insample[,"truth"],#
+                                      .predTest=outsample[,c("out.pred.1","out.pred.2","out.pred.3","out.pred.4","out.pred.5")],#
+                                      .outcomeTest=outsample[,"truth"],#
+                                      .modelNames=c("model1","model2","model3","model4","model5"))
+this.ensemble <- calibrateEnsemble(this.ForecastData, model="logit", maxIter=25000, exp=3,useModelParams=TRUE)
+x=9
+x<=10
+x<=9
+A<-matrix(ncol=4,c(3,1,6,3,6,9,4,2))
+A
+A<-matrix(ncol=4,c(3,1,6,3,6,9,4,2,11,7,8,2))
+A
+B<-matrix(ncol=2,c(3,1,2,1,8,16,5,4))
+B
+C=A%*%B
+C
+library(EBMAforecast)
+demo(presForecast)
+summary(thisEnsemble, period="test",showCoefs=FALSE)
+summary(thisEnsemble, period="calibration",showCoefs=FALSE)
+summary(thisEnsemble, period="calibration",showCoefs=TRUE)
+library(wicews)
+library(EBMAforecast)
+help(EBMAforecast)
+demo(presForecast)
+full.forecast
+full.forecasts
+avg<-row.Means(full.forecasts)
+avg<-rowMeans(full.forecasts)
+avg
+full.forecasts2<-as.data.frame(full.forecasts,avg)
+full.forecasts2<-as.data.frame(c(full.forecasts,avg))
+full.forecasts2
+full.forecasts2<-as.data.frame(c(full.forecasts,t(avg)))
+full.forecasts2
+full.forecasts2<-as.data.frame(rbind(full.forecasts,(avg)))
+full.forecasts2
+full.forecasts2<-as.data.frame(cbind(full.forecasts,(avg)))
+full.forecasts2
+this.ForecastData<-makeForecastData(.predCalibration=full.forecasts2[c(1:15),],.outcomeCalibration=full.observed[c(1:15)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))
+thisEnsemble<-calibrateEnsemble(this.ForecastData, model="normal", useModelParams=FALSE, tol=0.000000001)
+summary(thisEnsemble, period="training")
+summary(thisEnsemble, period="calibration")
+this.ForecastData<-makeForecastData(.predCalibration=full.forecasts2[c(1:14),],.outcomeCalibration=full.observed[c(1:14)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))
+thisEnsemble<-calibrateEnsemble(this.ForecastData, model="normal", useModelParams=FALSE, tol=0.000000001)
+summary(thisEnsemble, period="calibration")
+library(EBMAforecast)
+this.ForecastData1972<-makeForecastData(.predCalibration=full.forecasts2[c(1:6),],.outcomeCalibration=full.observed[c(1:6)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+#
+this.ForecastData1976<-makeForecastData(.predCalibration=full.forecasts2[c(1:7),],.outcomeCalibration=full.observed[c(1:7)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+#
+this.ForecastData1980<-makeForecastData(.predCalibration=full.forecasts2[c(1:8),],.outcomeCalibration=full.observed[c(1:8)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+#
+this.ForecastData1984<-makeForecastData(.predCalibration=full.forecasts2[c(1:9),],.outcomeCalibration=full.observed[c(1:9)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+this.ForecastData1988<-makeForecastData(.predCalibration=full.forecasts2[c(1:10),],.outcomeCalibration=full.observed[c(1:10)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+this.ForecastData1992<-makeForecastData(.predCalibration=full.forecasts2[c(1:11),],.outcomeCalibration=full.observed[c(1:11)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+this.ForecastData1996<-makeForecastData(.predCalibration=full.forecasts2[c(1:12),],.outcomeCalibration=full.observed[c(1:12)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+this.ForecastData2000<-makeForecastData(.predCalibration=full.forecasts2[c(1:13),],.outcomeCalibration=full.observed[c(1:13)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+this.ForecastData2004<-makeForecastData(.predCalibration=full.forecasts2[c(1:14),],.outcomeCalibration=full.observed[c(1:14)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+#
+this.ForecastData2008<-makeForecastData(.predCalibration=full.forecasts2[c(1:15),],.outcomeCalibration=full.observed[c(1:15)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+#
+thisEnsemble1976<-calibrateEnsemble(this.ForecastData1976, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble1980<-calibrateEnsemble(this.ForecastData1980, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble1984<-calibrateEnsemble(this.ForecastData1984, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble1988<-calibrateEnsemble(this.ForecastData1988, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble1992<-calibrateEnsemble(this.ForecastData1992, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble1996<-calibrateEnsemble(this.ForecastData1996, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble2000<-calibrateEnsemble(this.ForecastData2000, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble2004<-calibrateEnsemble(this.ForecastData2004, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble2008<-calibrateEnsemble(this.ForecastData2008, model="normal", useModelParams=FALSE, tol=0.000000001)
+summary(thisEnsemble1976)#
+summary(thisEnsemble1980)#
+summary(thisEnsemble1984)#
+summary(thisEnsemble1988)#
+summary(thisEnsemble1992)#
+summary(thisEnsemble1996)#
+summary(thisEnsemble2000)#
+summary(thisEnsemble2004)#
+summary(thisEnsemble2008)
+0.9+1.002+.949+.865+.943+0.836+0.760+0.799+0.880
+(0.9+1.002+.949+.865+.943+0.836+0.760+0.799+0.880)/9
+avg.mae.ebma=(0.914+0.959+0.950+0.835+0.809+0.737+0.726+0.722+0.506)/9
+avg.mae.ebma
+this.ForecastData1976<-makeForecastData(.predCalibration=full.forecasts[c(1:7),],.outcomeCalibration=full.observed[c(1:7)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+#
+this.ForecastData1980<-makeForecastData(.predCalibration=full.forecasts[c(1:8),],.outcomeCalibration=full.observed[c(1:8)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+#
+this.ForecastData1984<-makeForecastData(.predCalibration=full.forecasts[c(1:9),],.outcomeCalibration=full.observed[c(1:9)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+this.ForecastData1988<-makeForecastData(.predCalibration=full.forecasts[c(1:10),],.outcomeCalibration=full.observed[c(1:10)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+this.ForecastData1992<-makeForecastData(.predCalibration=full.forecasts[c(1:11),],.outcomeCalibration=full.observed[c(1:11)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+this.ForecastData1996<-makeForecastData(.predCalibration=full.forecasts[c(1:12),],.outcomeCalibration=full.observed[c(1:12)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+this.ForecastData2000<-makeForecastData(.predCalibration=full.forecasts[c(1:13),],.outcomeCalibration=full.observed[c(1:13)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+this.ForecastData2004<-makeForecastData(.predCalibration=full.forecasts[c(1:14),],.outcomeCalibration=full.observed[c(1:14)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+#
+this.ForecastData2008<-makeForecastData(.predCalibration=full.forecasts[c(1:15),],.outcomeCalibration=full.observed[c(1:15)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+#
+thisEnsemble1976<-calibrateEnsemble(this.ForecastData1976, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble1980<-calibrateEnsemble(this.ForecastData1980, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble1984<-calibrateEnsemble(this.ForecastData1984, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble1988<-calibrateEnsemble(this.ForecastData1988, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble1992<-calibrateEnsemble(this.ForecastData1992, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble1996<-calibrateEnsemble(this.ForecastData1996, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble2000<-calibrateEnsemble(this.ForecastData2000, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble2004<-calibrateEnsemble(this.ForecastData2004, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble2008<-calibrateEnsemble(this.ForecastData2008, model="normal", useModelParams=FALSE, tol=0.000000001)#
+#
+summary(thisEnsemble1976)#
+summary(thisEnsemble1980)#
+summary(thisEnsemble1984)#
+summary(thisEnsemble1988)#
+summary(thisEnsemble1992)#
+summary(thisEnsemble1996)#
+summary(thisEnsemble2000)#
+summary(thisEnsemble2004)#
+summary(thisEnsemble2008)
+this.ForecastData1976<-makeForecastData(.predCalibration=full.forecasts[c(1:7),],.outcomeCalibration=full.observed[c(1:7)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz"))#
+#
+this.ForecastData1980<-makeForecastData(.predCalibration=full.forecasts[c(1:8),],.outcomeCalibration=full.observed[c(1:8)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz"))#
+#
+this.ForecastData1984<-makeForecastData(.predCalibration=full.forecasts[c(1:9),],.outcomeCalibration=full.observed[c(1:9)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz"))#
+this.ForecastData1988<-makeForecastData(.predCalibration=full.forecasts[c(1:10),],.outcomeCalibration=full.observed[c(1:10)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz"))#
+this.ForecastData1992<-makeForecastData(.predCalibration=full.forecasts[c(1:11),],.outcomeCalibration=full.observed[c(1:11)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz"))#
+this.ForecastData1996<-makeForecastData(.predCalibration=full.forecasts[c(1:12),],.outcomeCalibration=full.observed[c(1:12)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz"))#
+this.ForecastData2000<-makeForecastData(.predCalibration=full.forecasts[c(1:13),],.outcomeCalibration=full.observed[c(1:13)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz"))#
+this.ForecastData2004<-makeForecastData(.predCalibration=full.forecasts[c(1:14),],.outcomeCalibration=full.observed[c(1:14)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz"))#
+#
+this.ForecastData2008<-makeForecastData(.predCalibration=full.forecasts[c(1:15),],.outcomeCalibration=full.observed[c(1:15)], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz"))#
+#
+thisEnsemble1976<-calibrateEnsemble(this.ForecastData1976, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble1980<-calibrateEnsemble(this.ForecastData1980, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble1984<-calibrateEnsemble(this.ForecastData1984, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble1988<-calibrateEnsemble(this.ForecastData1988, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble1992<-calibrateEnsemble(this.ForecastData1992, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble1996<-calibrateEnsemble(this.ForecastData1996, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble2000<-calibrateEnsemble(this.ForecastData2000, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble2004<-calibrateEnsemble(this.ForecastData2004, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble2008<-calibrateEnsemble(this.ForecastData2008, model="normal", useModelParams=FALSE, tol=0.000000001)#
+#
+summary(thisEnsemble1976)#
+summary(thisEnsemble1980)#
+summary(thisEnsemble1984)#
+summary(thisEnsemble1988)#
+summary(thisEnsemble1992)#
+summary(thisEnsemble1996)#
+summary(thisEnsemble2000)#
+summary(thisEnsemble2004)#
+summary(thisEnsemble2008)
+avg.mae.ebma=(0.949+0.991+0.925+0.745+0.655+0.676+0.583+0.631+0.611)/9
+avg.mae.ebma
+avg.mae.avg
+avg.mae.avg=(0.9+1.002+.949+.865+.943+0.836+0.760+0.799+0.880)/9
+avg.mae.avg
+library(EBMAforecast)#
+demo(presForecast)
+this.ForecastData1972<-makeForecastData(.predCalibration=full.forecasts2[c(1:6),],.outcomeCalibration=full.observed[c(1:6)],.predTest=full.forecasts[7,], .outcomeTest=full.observed[7] ,.modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))
+check the average error#
+#
+library(EBMAforecast)#
+demo(presForecast)#
+avg<-rowMeans(full.forecasts)#
+full.forecasts2<-as.data.frame(rbind(full.forecasts,(avg)))#
+#
+full.forecasts2
+this.ForecastData1972<-makeForecastData(.predCalibration=full.forecasts2[c(1:6),],.outcomeCalibration=full.observed[c(1:6)],.predTest=full.forecasts[7,], .outcomeTest=full.observed[7] ,.modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))
+this.ForecastData1972<-makeForecastData(.predCalibration=full.forecasts2[c(1:6),],.outcomeCalibration=full.observed[c(1:6)],.predTest=full.forecasts2[7,], .outcomeTest=full.observed[7] ,.modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))
+full.observed2
+full.forecasts2
+avg<-rowMeans(full.forecasts)
+full.forecasts2<-as.data.frame(rbind(full.forecasts,(avg)))
+full.forecasts2
+full.forecasts2<-as.data.frame(cbind(full.forecasts,(avg)))
+full.forecasts2
+this.ForecastData1972<-makeForecastData(.predCalibration=full.forecasts2[c(1:6),],.outcomeCalibration=full.observed[c(1:6)],.predTest=full.forecasts2[7,], .outcomeTest=full.observed[7] ,.modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+#
+this.ForecastData1976<-makeForecastData(.predCalibration=full.forecasts2[c(1:7),],.outcomeCalibration=full.observed[c(1:7)],.predTest=full.forecasts2[8,], .outcomeTest=full.observed[8] ,.modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))
+this.ForecastData1972<-makeForecastData(.predCalibration=full.forecasts2[c(1:6),],.outcomeCalibration=full.observed[c(1:6)],.predTest=full.forecasts2[7,], .outcomeTest=full.observed[7] ,.modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+#
+this.ForecastData1976<-makeForecastData(.predCalibration=full.forecasts2[c(1:7),],.outcomeCalibration=full.observed[c(1:7)],.predTest=full.forecasts2[8,], .outcomeTest=full.observed[8] ,.modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+#
+this.ForecastData1980<-makeForecastData(.predCalibration=full.forecasts2[c(1:8),],.outcomeCalibration=full.observed[c(1:8)], .predTest=full.forecasts2[9,], .outcomeTest=full.observed[9],.modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+#
+this.ForecastData1984<-makeForecastData(.predCalibration=full.forecasts2[c(1:9),],.outcomeCalibration=full.observed[c(1:9)],.predTest=full.forecasts2[10,], .outcomeTest=full.observed[10], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+this.ForecastData1988<-makeForecastData(.predCalibration=full.forecasts2[c(1:10),],.outcomeCalibration=full.observed[c(1:10)], .predTest=full.forecasts2[11,], .outcomeTest=full.observed[11],.modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+this.ForecastData1992<-makeForecastData(.predCalibration=full.forecasts2[c(1:11),],.outcomeCalibration=full.observed[c(1:11)], .predTest=full.forecasts2[12,], .outcomeTest=full.observed[12],.modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+this.ForecastData1996<-makeForecastData(.predCalibration=full.forecasts2[c(1:12),],.outcomeCalibration=full.observed[c(1:12)],.predTest=full.forecasts2[13,], .outcomeTest=full.observed[13], .modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+this.ForecastData2000<-makeForecastData(.predCalibration=full.forecasts2[c(1:13),],.outcomeCalibration=full.observed[c(1:13)], .predTest=full.forecasts2[14,], .outcomeTest=full.observed[14],.modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))#
+this.ForecastData2004<-makeForecastData(.predCalibration=full.forecasts2[c(1:14),],.outcomeCalibration=full.observed[c(1:14)], .predTest=full.forecasts2[15,], .outcomeTest=full.observed[15],.modelNames=c("Campbell", "Lewis-Beck","EWT2C2","Fair","Hibbs","Abramowitz","avg"))
+thisEnsemble1976<-calibrateEnsemble(this.ForecastData1976, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble1980<-calibrateEnsemble(this.ForecastData1980, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble1984<-calibrateEnsemble(this.ForecastData1984, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble1988<-calibrateEnsemble(this.ForecastData1988, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble1992<-calibrateEnsemble(this.ForecastData1992, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble1996<-calibrateEnsemble(this.ForecastData1996, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble2000<-calibrateEnsemble(this.ForecastData2000, model="normal", useModelParams=FALSE, tol=0.000000001)#
+thisEnsemble2004<-calibrateEnsemble(this.ForecastData2004, model="normal", useModelParams=FALSE, tol=0.000000001)
+thisEnsemble1972<-calibrateEnsemble(this.ForecastData1972, model="normal", useModelParams=FALSE, tol=0.000000001)
+summary(thisEnsemble1972,period="test")#
+summary(thisEnsemble1976,period="test")#
+summary(thisEnsemble1980,period="test")#
+summary(thisEnsemble1984,period="test")#
+summary(thisEnsemble1988,period="test")#
+summary(thisEnsemble1992,period="test")#
+summary(thisEnsemble1996,period="test")#
+summary(thisEnsemble2000,period="test")#
+summary(thisEnsemble2004,period="test")
+x<-seq(-500,500,0.01)
+y=3/(1+x^2)
+plot(y,x)
+plot(x,y,type=l)
+plot(x,y,type="l")
+x<-seq(-3,3,0.01)
+y=3/(1+x^2)
+plot(x,y,type="l")
+x<-seq(-4,4,0.01)
+y=3/(1+x^2)
+plot(x,y,type="l")
+x<-seq(-500,500,0.01)
+plot(x,y,type="l",xlim=c(-5,5))
+x<-seq(-500,500,0.01)#
+y=3/(1+x^2)#
+#
+plot(x,y,type="l",xlim=c(-5,5))
+x<-c(seq(-500,-0.0001,0.0001),seq(0.001,500,0.001))
+y=1/x
+plot(x,y,type="l",xlim=c(-5,5))
+x<-c(seq(-500,-0.0001,0.0001),seq(0.001,500,0.001))#
+y=1/x#
+#
+plot(x,y,type="l",xlim=c(-5,5
+))
+plot(x,y,type="l",xlim=c(-5,5),ylim=c(-10,10))
+x<-seq(-100,100,0.1)
+y=(x^3)+2
+plot(x,y)
+plot(x,y,type="l")
+library(devtools)#
+library(roxygen2)#
+library(testthat)#
+#
+#setwd("~/Documents/GIT/EBMAforecast/")#
+setwd("~/GITHUB/EBMAforecast/")#
+#
+# Only need to run this portion once#
+current.code <- as.package("EBMAforecast")#
+load_all(current.code)#
+document(current.code)#
+#
+# check to see if ti works.#
+check(current.code)#
+#
+## you can install to run the demo and see help files#
+install(current.code)#
+#
+# Once it's installed, you can look at the demo#
+library(EBMAforecast)#
+# run all tests to make sure everything is working as expected, testfile needs package installed, so that data is available for tests#
+test_file("test_start.R")
+library(EBMAforecast)
+demo(EBMAforecast)
+x<-rnorm(1000000,0,1)
+plot(density(x))
+curve(pnorm,0,1)
+plot(ecdf(x))
+x<-c(6,3,7,5,5,5,6,4,7,2)
+length(x)
+var(x)
+sd_x<-sqrt(var_x)
+var_x<-var(x)#
+sd_x<-sqrt(var_x)
+sd_x
+sum((x-5))
+sum(abs(x-5))
+MAD_x<-median_x(abs(x-median_x))
+MAD_x<-median_x*(abs(x-median_x))
+median_x<-5#
+MAD_x<-median_x*(abs(x-median_x))
+MAD_x
+y<-c(1,2,1,2,2,1,2,0,2,0)
+length(y)
+median_x<-median(x)
+median_x
+median_y<-median(y)
+median_y
+MAD_x<-median(abs(x-median_x))
+MAD_x
+abs(x-median_x)
+MAD_y<-median(abs(y-median_y))
+MAD_y
+median_y<-median(y)
+sd_y
+sd_y<-sqrt(var_y)
+sd_y
+var_y<-var(y)
+sd_y<-sqrt(var_y)
+sd_y
+var_y
+COV_xy<-cov(x,y)
+COV_xy
+hand_cov<-(1/(10-1))*sum((x-mean(x))*(y-mean(y)))
+hand_cov
+mean_x<-(1/10)*sum(x)
+mean_x
+mean_y<-(1/10)*sum(y)
+hand_cov<-(1/(10-1))*sum((x-mean_x)*(y-mean_y))
+hand_cov
+hand_cor<-hand_cov/(sqrt(var_x*var_y))
+hand_cor
+cor(xy)
+cor(x,y)
+var_x<-(1/(n-1))*sum((x-mean_x)^2)
+var_x<-(1/(10-1))*sum((x-mean_x)^2)
+var_x
+var_y<-(1/(10-1))*sum((y-mean_y)^2)
+var_y
+x<-rnorm(1000000,0,1)
+plot(density(x))
+plot(ecdf(x))
+x<-c(6,3,7,5,5,5,6,4,7,2)#
+y<-c(1,2,1,2,2,1,2,0,2,0)#
+#
+mean_x<-(1/10)*sum(x)#
+mean_y<-(1/10)*sum(y)
+mean_x
+mean_y<-(1/10)*sum(y)
+mean_y
+var_x<-(1/(10-1))*sum((x-mean_x)^2)
+var_y<-(1/(10-1))*sum((y-mean_y)^2)
+var_x
+var_y
+sd_x
+sd_x<-sqrt(var_x)
+sd_y<-sqrt(var_y)
+sd_x
+sd_y
+median_x<-median(x)
+median_y<-median(y)
+MAD_x<-median(abs(x-median_x))
+MAD_x
+MAD_y<-median(abs(y-median_y))
+MAD_y
+COV_xy<-cov(x,y)
+COV_xy
+hand_cov<-(1/(10-1))*sum((x-mean_x)*(y-mean_y))
+hand_cov
+cor(x,y)
+hand_cor<-hand_cov/(sqrt(var_x*var_y))
+hand_cor
+library(EBMAforecast)
+help(EBMAforecast)
+demo(EBMAforecast)
+library(foreign)#
+setwd("~/Documents/GIT/EBMAforecast/PresForecastPS")#
+holbrook<-read.dta("Holbrook_data_for_Ward.dta")#
+data.holbrook<-subset(holbrook,year<2012)#
+head(holbrook)#
+#
+model.holbrook<-lm(vote~conditions+openseat+conditions*openseat,data=data.holbrook)#
+insample.holbrook<-fitted(model.holbrook)#
+years<-data.holbrook$year#
+insample.holbrook<-data.frame(years,insample.holbrook)#
+names(insample.holbrook)<-c("Year","Holbrook")#
+#
+data.campbell<-read.csv("Campbell_data.csv")#
+head(data.campbell)#
+insample.campbell.trialheat<-data.campbell[,c("YEAR","PREDICT1")]#
+insample.campbell.bump<-data.campbell[,c("YEAR","PREDICT2")]#
+names(insample.campbell.trialheat)<-c("Year","Campbell.trialheat")#
+names(insample.campbell.bump)<-c("Year","Campbell.bump")#
+cuzan.data<-read.csv("data_cuzan2.csv")#
+summary(cuzan.data)#
+cuzan.long<-subset(cuzan.data,YEAR>1879 & YEAR<2012)#
+cuzan.short<-subset(cuzan.data,YEAR>1915& YEAR<2012)#
+#
+#results not exactly the same#
+cuzan1.short<-lm(VOTE2~FISCAL_2012+GROWTH+ALLNEWS+DURATION+PARTY,data=cuzan.short)#
+cuzan1.long<-lm(VOTE2~FISCAL_2012+GROWTH+ALLNEWS+DURATION+PARTY,data=cuzan.data)#
+cuzan2.long<-lm(VOTE2~FPRIME_2012+GROWTH+ALLNEWS  +DURATION+PARTY,data=cuzan.data)#
+cuzan2.short<-lm(VOTE2~FPRIME_2012+GROWTH+ALLNEWS+DURATION+PARTY,data=cuzan.short)#
+summary(cuzan1.long)#
+summary(cuzan2.long)#
+summary(cuzan1.short)#
+summary(cuzan2.short)#
+years.long<-cuzan.long[,"YEAR"]#
+years.short<-cuzan.short[,"YEAR"]#
+#
+insample.cuzan1.short<-fitted(cuzan1.short)#
+insample.cuzan2.short<-fitted(cuzan2.short)#
+insample.cuzan1.long<-fitted(cuzan1.long)#
+insample.cuzan2.long<-fitted(cuzan2.long)#
+insample.cuzan.short<-data.frame(years.short,insample.cuzan1.short,insample.cuzan2.short)#
+insample.cuzan.long<-data.frame(years.long,insample.cuzan1.long,insample.cuzan2.long)#
+names(insample.cuzan.short)<-c("Year","Cuzan1.short","Cuzan2.short")#
+names(insample.cuzan.long)<-c("Year","Cuzan1.long","Cuzan2.long")#
+hibbspreds <- read.csv("Predictions_hibbs.csv")#
+insample.hibbs<-hibbspreds[,c("Year","Point_Pred")]#
+names(insample.hibbs)<-c("Year","Hibbs")#
+lockerbie<-read.csv("~/Documents/GIT/EBMAforecast/PresForecastPS/LockerbieData.csv")#
+insample.lockerbie<-lockerbie[,c("Year","Forecast")]#
+names(insample.lockerbie)<-c("Year","Lockerbie")#
+#
+merge1<-merge(insample.campbell.trialheat,insample.campbell.bump,by="Year",all.x=TRUE,all.y=TRUE)#
+merge2<-merge(merge1,insample.holbrook,by="Year",all.x=TRUE,all.y=TRUE)#
+merge3<-merge(merge2,insample.cuzan.long,by="Year",all.x=TRUE,all.y=TRUE)#
+merge4<-merge(merge3,insample.cuzan.short,by="Year",all.x=TRUE,all.y=TRUE)#
+merge5<-merge(merge4,insample.hibbs,by="Year",all.x=TRUE,all.y=TRUE)#
+insample.data<-merge(merge5,insample.lockerbie,by="Year",all.x=TRUE,all.y=TRUE)#
+### Berry data#
+#library(foreign)#
+#
+#berry<-read.dta("~/Documents/GIT/EBMAforecast/PresForecastApsa/Berry_forecast_data.dta")#
+#head(berry)#
+#berry_new<-berry[,c("year","voters","dpvoteest1","rpvoteest1")]#
+#berry#
+#berry_aggregate <-aggregate(berry_new, by=list(berry_new$year), FUN=sum)#
+#head(berry_aggregate)#
+#berry_aggregate<-berry_aggregate[,-2]#
+#names(berry_aggregate)[1]<-"year"#
+#
+#berry_est<-berry_aggregate#
+#berry_est$rep_share<-berry_est$rpvoteest1/berry_est$voters#
+#berry_est$dem_share<-berry_est$dpvoteest1/berry_est$voters#
+#berry_est$inc.share<-NA#
+#berry_est$inc.share<-ifelse(berry_est$year==1980,berry_est$dem_share,berry_est$inc.share)#
+#berry_est$inc.share<-ifelse(berry_est$year==1984,berry_est$rep_share,berry_est$inc.share)#
+#berry_est$inc.share<-ifelse(berry_est$year==1988,berry_est$rep_share,berry_est$inc.share)#
+#berry_est$inc.share<-ifelse(berry_est$year==1992,berry_est$rep_share,berry_est$inc.share)#
+#berry_est$inc.share<-ifelse(berry_est$year==1996,berry_est$dem_share,berry_est$inc.share)#
+#berry_est$inc.share<-ifelse(berry_est$year==2000,berry_est$dem_share,berry_est$inc.share)#
+#berry_est$inc.share<-ifelse(berry_est$year==2004,berry_est$rep_share,berry_est$inc.share)#
+#berry_est$inc.share<-ifelse(berry_est$year==2008,berry_est$rep_share,berry_est$inc.share)#
+#head(berry_est)#
+#
+#berry<-berry_est[,c("year","inc.share")]#
+#names(berry)<-c("Year","berry")#
+#berry$berry<-berry$berry*100#
+#insample.data<-merge(insample.data,berry,by="Year",all.x=TRUE,all.y=TRUE)#
+berry_forecast<-c(44.40,58.61,53.16,47.58,54.00,49.34,51.68,45.05,47.14)#
+Year<-c(1980,1984,1988,1992,1996,2000,2004,2008,2012)#
+berry<-data.frame(cbind(Year, berry_forecast))#
+names(berry)<-c("Year","berry")#
+insample.data<-merge(insample.data,berry,by="Year",all.x=TRUE,all.y=TRUE)#
+#
+save(insample.data, file="insample.data.RData")#
+#
+rm(list=ls(all=TRUE))#
+setwd("~/Documents/GIT/EBMAforecast/PresForecastPS")#
+#
+load("insample.data.RData")#
+erikson.insample<-read.csv("Erikson_Wlezien_forecast.csv")#
+#
+head(insample.data)#
+insample.data<-merge(insample.data,erikson.insample,by="Year",all.x=TRUE,all.y=TRUE)#
+#
+insample.data#
+save(insample.data,file="insample.data.RData")#
+rm(list=ls(all=TRUE))#
+setwd("~/Documents/GIT/EBMAforecast/PresForecastPS")#
+#
+load("insample.data.RData")#
+abramowitz.insample<-read.csv("Abramowitz_forecast.csv")#
+#
+head(insample.data)#
+insample.data<-merge(insample.data,abramowitz.insample,by="Year",all.x=TRUE,all.y=TRUE)#
+lewisbeck<-read.csv("Lewis-Beck_Tien_forecasts.csv")#
+insample.data<-merge(insample.data,lewisbeck,by="Year",all.x=TRUE,all.y=TRUE)#
+norpoth<-read.csv("norpoth_forecast.csv")#
+norpoth$Norpoth_inc<-ifelse(norpoth$repub_inc==1,100-norpoth$Norpoth,norpoth$Norpoth)#
+norpoth2<-norpoth[,c("Year","Norpoth_inc")]#
+insample.data<-merge(insample.data,norpoth2,by="Year",all.x=TRUE,all.y=TRUE)#
+#
+insample.data<-insample.data[-c(34,35),]#
+save(insample.data,file="insample.data.RData")#
+rm(list=ls(all=TRUE))#
+setwd("~/Documents/GIT/EBMAforecast/PresForecastPS")#
+#
+load("insample.data.RData")#
+data_2012<-insample.data[1,]#
+#
+data_2012<-data_2012[,-1]#
+rownames(data_2012)<-2012#
+data_2012[1,5]<-NA#
+data_2012[1,4]<-NA#
+### current 2012 forecasts#
+data_2012["2012","Erikson.Wlezien"]<-52.6#
+data_2012["2012","Holbrook"]<-47.9#
+data_2012["2012","berry"]<-47.14#
+data_2012["2012","Hibbs"]<-47.5#
+data_2012["2012","Lockerbie"]<-54.00#
+data_2012["2012","Campbell.trialheat"]<-50.6#
+data_2012["2012","Campbell.bump"]<-50.4#
+data_2012["2012","Abramowitz"]<-50.5#
+data_2012["2012","Lewis.Beck_Tien_Jobs"]<-48.2#
+data_2012["2012","Lewis.Beck_Tien_Proxy"]<-52.7#
+data_2012["2012","Cuzan1.short"]<-45.5#
+data_2012["2012","Cuzan2.short"]<-46.9#
+data_2012["2012","Norpoth_inc"]<-53.2#
+#
+ save(data_2012,file="data_2012.RData")
+rm(list=ls())#
+library(devtools)#
+library(roxygen2)#
+library(testthat)#
+#
+setwd("~/Documents/GIT/EBMAforecast/")#
+#setwd("~/GITHUB/EBMAforecast/")#
+current.code <- as.package("EBMAforecast")#
+load_all(current.code)#
+document(current.code)#
+# setwd("~/GITHUB/EBMAforecast/PresForecastApsa/")#
+# load("~/Github/EBMAforecast/PresForecastApsa/insample.data.RData")#
+# load("~/Github/EBMAforecast/PresForecastApsa/data_2012.RData")#
+#
+setwd("~/Documents/GIT/EBMAforecast/PresForecastPS/")#
+load("~/Documents/GIT/EBMAforecast/PresForecastPS/insample.data.RData")#
+load("~/Documents/GIT/EBMAforecast/PresForecastPS/data_2012.RData")#
+#
+insample.data <- insample.data[-c(34,35),]#
+rownames(insample.data) <- insample.data$Year#
+my.years <- paste(seq(1948,2008, by=4))#
+this.pred <- insample.data[my.years, -c(1, 3,  5,6 , 7,   15)]#
+this.pred
+master.data <- read.csv("presdata.csv", row.names=1)
+setwd("~/Dropbox/EBMA/ReplicationFiles/ForPADataverse/")
+master.data <- read.csv("presdata.csv", row.names=1)
+this.out <- (master.data[my.years, "dv"])
+this.test <- as.matrix(data_2012)[,-c(2,4,5,6,14)]
+length(this.test)
+ncol(this.pred)
+this.out
+thisFD <- makeForecastData(.predCalibration=this.pred, .outcomeCalibration=this.out,  .modelNames=colnames(this.pred))#
+thisFD@predTest <- array(this.test, dim=c(1, 10, 1))#
+thisFD@outcomeTest <- 0
+ensemble05 <- calibrateEnsemble(.forecastData=thisFD, model="normal", tol=sqrt(.Machine$double.eps), maxIter=1000000, useModelParams=FALSE, predType="posteriorMedian", const=0.05)#
+summary(ensemble05, showCoefs=FALSE)#
+ensemble05@predTest
+rbind(this.pred,this.out)
+thisFD <- makeForecastData(.predCalibration=this.pred, .outcomeCalibration=this.out,  .modelNames=colnames(this.pred))
+thisFD@predTest <- array(this.test, dim=c(1, 10, 1))
+thisFD@predTest
+rbind(this.pred,thisFD@predTest)
+data.for.graefe<-rbind(this.pred,thisFD@predTest)
+write.csv(data.for.graefe,file="~/Desktop/data.for.graefe.csv")
+thisFD@predTest
+ensemble05@predTest
+setwd("~/Dropbox/EBMA/ReplicationFiles/ForPADataverse/")
+library(foreign)#
+library(nls2)#
+library(ensembleBMA)#
+#
+hibbspreds <- read.csv("Prediction_hibbs.csv") # Hibbs predictive intervals generated in Stata.  See *.do file.#
+master.data<-read.csv("presdata.csv") # read in data
+Function to fit each model on the appropriate training years, fit the EBMA model on the validation period, and make out-of-sample forecasts#
+my.eBMA <- function(tyn = 15, a = 1, train.years =  10, hibbpreds=hibbspreds){#
+   master.years <- seq(1952, 2008, by=4)#
+   in.data <- matrix(NA, (tyn-1), 6)#
+   out.data <- matrix(NA, 1, 6)#
+   rownames(in.data) <- master.years[1:(tyn-1)]#
+   rownames(out.data) <- master.years[tyn]#
+   colnames(out.data) <- colnames(in.data) <- c("Campbell", "Lewis-Beck", "EWT2C2", "Fair", "Hibbs", "Abramowitz")#
+   in.master <- master.data[master.data$year >=1952 & master.data$year<master.years[tyn],] #Validation period#
+   out.master <- master.data[master.data$year == master.years[tyn],] # Test period#
+#
+   # Fit each of the models on the training data, and estimate y.hat for the validation period#
+   c.model <- lm(dv~septpoll+gdpqtr2half, data=master.data[master.data$year<master.years[tyn],]) #Training period#
+   in.data[,1] <- predict(c.model, newdata=in.master) # Validation Period#
+   out.data[,1] <- predict(c.model, newdata=out.master) #Test Period#
+   lb.model <- lm(dv ~ julypop + incxgnp + jobhousu + closeinc, data=master.data[master.data$year<master.years[tyn],])#
+   in.data[,2] <- predict(lb.model, newdata=in.master)#
+   out.data[,2] <- predict(lb.model, newdata=out.master)#
+   ew.model <- lm(dv ~ l1cumleigrowth + incumbentpoll, data=master.data[master.data$year<master.years[tyn],])#
+   in.data[,3] <- predict(ew.model, newdata=in.master)#
+   out.data[,3] <- predict(ew.model, newdata=out.master)#
+#
+   fair.model <- lm(dv ~ G + P + Z + adper + adur + war + I, data=master.data[master.data$year<master.years[tyn],])#
+   in.data[,4] <- predict(fair.model, newdata=in.master)#
+   out.data[,4] <- predict(fair.model, newdata=out.master)#
+#
+   hibbs.model <- nls(dv ~ beta0 + bdlnr* (((1.0*wtq16*dnlr) + (g*dnlr.L1) + ((g^2)*dnlr.L2) + ((g^3)*dnlr.L3) +#
+                                             ((g^4)*dnlr.L4) + ((g^5)*dnlr.L5) + ((g^6)*dnlr.L6) + ((g^7)*dnlr.L7) +#
+                                             ((g^8)*dnlr.L8) + ((g^9)*dnlr.L9) + ((g^10)*dnlr.L10) + ((g^11)*dnlr.L11) +#
+                                             ((g^12)*dnlr.L12)+ ((g^13)*dnlr.L13)+ ((g^14)*dnlr.L14))/#
+                                            (1.0*wtq16 + g + g^2 + g^3 + g^3 + g^4 + g^5 + g^6 + g^7 + g^8 + g^9 +#
+                                             g^10 + g^11 + g^12 + g^13 + g^14)) + bkia*fatalities,#
+                      start=list(beta0=45, g=0.95, bdlnr=4, bkia=-0.1),#
+                      data=master.data[master.data$year<master.years[tyn],])#
+   in.data[,5] <- predict(hibbs.model, newdata=in.master)#
+   out.data[,5] <- predict(hibbs.model, newdata=out.master)#
+   ab.model <- lm(dv~q2gdp+term+juneapp,data=master.data[master.data$year<master.years[tyn],])#
+   in.data[,6] <- predict(ab.model, newdata=in.master)#
+   out.data[,6] <- predict(ab.model, newdata=out.master)#
+#
+   # record the predictive invervals for each individual function#
+   sixseven <- matrix(nrow=6, ncol=2)#
+   sixseven[1,]=predict(c.model, newdata=out.master, interval="prediction", level=.67)[2:3]#
+   sixseven[2,]=predict(lb.model, newdata=out.master, interval="prediction", level=.67)[2:3]#
+   sixseven[3,]=predict(ew.model, newdata=out.master, interval="prediction", level=.67)[2:3]#
+   sixseven[4,]=predict(fair.model, newdata=out.master, interval="prediction", level=.67)[2:3]#
+   sixseven[5,]=c(hibbspreds$X66_low[hibbspreds$Year==master.years[tyn]], hibbspreds$X66_high[hibbspreds$Year==master.years[tyn]]) # Read in from external file#
+   sixseven[6,]=predict(ab.model, newdata=out.master, interval="prediction", level=.67)[2:3]#
+#
+   ninezero <- matrix(nrow=6, ncol=2)#
+   ninezero[1,]=predict(c.model, newdata=out.master, interval="prediction", level=.90)[2:3]#
+   ninezero[2,]=predict(lb.model, newdata=out.master, interval="prediction", level=.90)[2:3]#
+   ninezero[3,]=predict(ew.model, newdata=out.master, interval="prediction", level=.90)[2:3]#
+   ninezero[4,]=predict(fair.model, newdata=out.master, interval="prediction", level=.90)[2:3]#
+   ninezero[5,]=c(hibbspreds$X90_low[hibbspreds$Year==master.years[tyn]], hibbspreds$X90_high[hibbspreds$Year==master.years[tyn]]) #
+   ninezero[6,]=predict(ab.model, newdata=out.master, interval="prediction", level=.90)[2:3]#
+   # Now fit the ebma model#
+    full.forecasts <- rbind(in.data, out.data) #
+    full.observed <- c(master.data$dv[10:(9+tyn)]) # Reducing the validation period to begin in 1952#
+#
+   # Stupid thing to make data work with ensembleBMA function#
+   dates <- rep(NA, tyn)#
+   for (i in 1:tyn){#
+     dates[i] <- paste("2011", "01", 10+i, "01", sep="")#
+    }
+pred.date <- dates[tyn]#
+   my.E.data <- ensembleData(forecasts=(full.forecasts)^(1/a), dates=dates, observations=full.observed,#
+                             initializationTime=1, forecastHour=1) #Make a dataset of the appropriate format for the ensembleBMA package#
+   fit.eBMA <- ensembleBMAnormal(my.E.data, trainingDays=train.years, dates=pred.date, minCRPS=TRUE,#
+                              control=controlBMAnormal(biasCorrection="none")) # Fit the EBMA models#
+   conf.int <- quantileForecast(fit.eBMA, my.E.data, c(.025, .05, .166666, .5, .833333, .95, .975)) #Make needed confidence intervals for the test-period year#
+   err <- cbind(out.data-full.observed[tyn], conf.int[4]-full.observed[tyn]) #Errors for the EBMA model#
+   colnames(err) <- c(colnames(in.data), "EBMA")#
+#
+   observed <- full.observed[tyn]#
+#
+   # Code whether or not, the test-period observations fell within the predictive intervals#
+   cov.90 <- c(observed > ninezero[,1] & observed < ninezero[,2],#
+               observed<=conf.int[6] & observed>=conf.int[2])#
+   names(cov.90) <- c(colnames(in.data), "EBMA")#
+   cov.67 <- c(observed > sixseven[,1] & observed < sixseven[,2],#
+               observed<=conf.int[5] & observed>=conf.int[3])#
+   names(cov.67) <- c(colnames(in.data), "EBMA")#
+   out <- list(in.data=in.data, out.data=out.data, full.observed=full.observed, pred.date=pred.date,#
+               E.data=my.E.data, fit.eBMA=fit.eBMA, conf.int=conf.int, err=err, observed=full.observed[tyn],#
+               cov.67=cov.67, cov.90=cov.90, sixseven=sixseven, ninezero=ninezero)#
+}
+Fit the EBMA models for each year#
+fit.2008 <- my.eBMA(tyn=15, train.years=14)#
+fit.2004 <- my.eBMA(tyn=14, train.years=13)#
+fit.2000 <- my.eBMA(tyn=13, train.years=12)#
+fit.1996 <- my.eBMA(tyn=12, train.years=11)#
+fit.1992 <- my.eBMA(tyn=11, train.years=10)#
+fit.1988 <- my.eBMA(tyn=10, train.years=9)#
+fit.1984 <- my.eBMA(tyn=9, train.years=8)#
+fit.1980 <- my.eBMA(tyn=8, train.years=7)#
+fit.1976 <- my.eBMA(tyn=7, train.years=6)
+Table 4#
+t4<-matrix(NA, nrow=7, ncol=4)#
+rownames(t4)<-colnames(fit.1976$err)#
+colnames(t4)<- c("RMSE", "MAE", "67", "90")#
+errors <- rbind(fit.1976$err, fit.1980$err, fit.1984$err, fit.1988$err, fit.1992$err, fit.1996$err ,fit.2000$err, fit.2004$err, fit.2008$err)#
+t4[,"RMSE"]<-sqrt(colMeans(errors^2))#
+t4[,"MAE"] <- colMeans(abs(errors))#
+coverage.67 <- rbind(fit.1976$cov.67, fit.1980$cov.67, fit.1984$cov.67, fit.1988$cov.67, fit.1992$cov.67, fit.1996$cov.67 ,fit.2000$cov.67, fit.2004$cov.67, fit.2008$cov.67)#
+t4[,"67"] <- colMeans(coverage.67)#
+coverage.90 <- rbind(fit.1976$cov.90, fit.1980$cov.90, fit.1984$cov.90, fit.1988$cov.90, fit.1992$cov.90, fit.1996$cov.90 ,fit.2000$cov.90, fit.2004$cov.90, fit.2008$cov.90)#
+t4[,"90"]<-colMeans(coverage.90)#
+round(t4[c(1,6,5,4,2,3,7),], digits=2)
+rm(list=ls())#
+library(devtools)#
+library(roxygen2)#
+library(testthat)#
+#
+setwd("~/Documents/GIT/EBMAforecast/")#
+#setwd("~/GITHUB/EBMAforecast/")#
+current.code <- as.package("EBMAforecast")#
+load_all(current.code)#
+document(current.code)#
+# setwd("~/GITHUB/EBMAforecast/PresForecastApsa/")#
+# load("~/Github/EBMAforecast/PresForecastApsa/insample.data.RData")#
+# load("~/Github/EBMAforecast/PresForecastApsa/data_2012.RData")#
+#
+setwd("~/Documents/GIT/EBMAforecast/PresForecastPS/")#
+load("~/Documents/GIT/EBMAforecast/PresForecastPS/insample.data.RData")#
+load("~/Documents/GIT/EBMAforecast/PresForecastPS/data_2012.RData")#
+#
+insample.data <- insample.data[-c(34,35),]#
+rownames(insample.data) <- insample.data$Year#
+my.years <- paste(seq(1948,2008, by=4))#
+this.pred <- insample.data[my.years, -c(1, 3,  5,6 , 7,   15)]#
+this.pred#
+dim(this.pred)#
+setwd("~/Dropbox/EBMA/ReplicationFiles/ForPADataverse/")#
+master.data <- read.csv("presdata.csv", row.names=1)#
+this.out <- (master.data[my.years, "dv"])#
+this.test <- as.matrix(data_2012)[,-c(2,4,5,6,14)]#
+length(this.test)#
+ncol(this.pred)
+thisFD <- makeForecastData(.predCalibration=this.pred, .outcomeCalibration=this.out,  .modelNames=colnames(this.pred))#
+thisFD@predTest <- array(this.test, dim=c(1, 10, 1))#
+thisFD@outcomeTest <- 0
+this.test
+this.pred
+load("~/Documents/GIT/EBMAforecast/PresForecastPS/insample.data.RData")
+insample.data
+load("~/Documents/GIT/EBMAforecast/PresForecastPS/insample.data.RData")
+insample.data <- insample.data[-c(34,35),]
+rownames(insample.data) <- insample.data$Year
+my.years <- paste(seq(1948,2008, by=4))
+names(insample.data)
+load("~/Documents/GIT/EBMAforecast/PresForecastPS/insample.data.RData")
+insample.data

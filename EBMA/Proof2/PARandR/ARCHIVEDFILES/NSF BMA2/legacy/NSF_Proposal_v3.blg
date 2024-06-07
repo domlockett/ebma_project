@@ -1,0 +1,46 @@
+This is BibTeX, Version 0.99d (TeX Live 2010)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: NSF_Proposal_v3.aux
+The style file: apsr.bst
+Database file #1: Flo_Bib.bib
+You've used 75 entries,
+            2874 wiz_defined-function locations,
+            1138 strings with 16876 characters,
+and the built_in function-call counts, 304372 in all, are:
+= -- 49793
+> -- 3502
+< -- 1
++ -- 23258
+- -- 1249
+* -- 26021
+:= -- 61211
+add.period$ -- 302
+call.type$ -- 75
+change.case$ -- 976
+chr.to.int$ -- 75
+cite$ -- 75
+duplicate$ -- 1114
+empty$ -- 2573
+format.name$ -- 1325
+if$ -- 54707
+int.to.chr$ -- 5
+int.to.str$ -- 0
+missing$ -- 72
+newline$ -- 309
+num.names$ -- 868
+pop$ -- 234
+preamble$ -- 1
+purify$ -- 1125
+quote$ -- 0
+skip$ -- 970
+stack$ -- 0
+substring$ -- 70256
+swap$ -- 147
+text.length$ -- 1051
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 292
+warning$ -- 0
+while$ -- 1754
+width$ -- 0
+write$ -- 1031

@@ -1,0 +1,6 @@
+EBMAforecast-package	EBMAforecast-package
+EBMAforecast	EBMAforecast-package
+Ensemble.logit	Ensemble.logit
+Insample	Insample
+Outsample	Outsample
+predict.Ensemble.logit	predict.Ensemble.logit

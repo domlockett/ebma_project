@@ -1,0 +1,873 @@
+\documentclass{beamer}
+\usetheme[]{Boadilla} 
+
+\definecolor{WUSTLgreen} {RGB} {44, 80, 54}
+\definecolor{WUSTLred} {RGB} {149, 1, 1}
+\definecolor{WUSTLtan} {RGB} {229, 210, 184}
+\setbeamercolor{structure}{fg=WUSTLred, bg=WUSTLgreen}
+\setbeamercolor{normaltext}{bg=black, fg=WUSTLtan}
+\setbeamercolor{block title}{fg=WUSTLred}
+\setbeamercolor{block title example}{fg=WUSTLgreen}
+\setbeamercolor{frametitle}{fg=WUSTLgreen}
+\setbeamercolor{title}{fg=WUSTLgreen}
+
+
+
+\setbeamertemplate{blocks}[rounded]
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{multirow, multicol}
+\usepackage{mathpazo}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{setspace}
+\usepackage{hyperref}
+\usepackage{array,colortbl,booktabs}
+\usepackage{soul}
+
+\newcommand{\bframe}{\begin{frame}}
+\newcommand{\jacob}{\end{frame}}
+\newcommand{\bi}{\begin{itemize}}
+\newcommand{\ei}{\end{itemize}}
+\newcommand{\be}{\begin{enumerate}}
+\newcommand{\ee}{\end{enumerate}}
+\newcommand{\vp}{\vspace{.5cm}}
+\newcommand{\bis}{\begin{itemize}[<+->]}
+\newcommand{\bes}{\begin{enumerate}[<+->]}
+\newcommand{\red}[1]{\color{WUSTLred}{#1}}
+\newcommand{\bc}{\begin{center}}
+\newcommand{\ec}{\end{center}}
+\newcommand{\eb}{\end{block}}
+\newcommand{\ds}{\displaystyle}
+
+\newcommand{\skipslide}{\addtocounter{framenumber}{-1}}
+
+
+\newcommand{\ykm}{ $\mathbf{y}_{k-1,j}$}
+\newcommand{\ykmg}{ \mathbf{y}_{k-1,j}}
+
+
+
+\usepackage{amssymb}
+\usepackage{natbib}
+\usepackage{tabularx}
+
+\title[CAT \\for Public Opinion Surveys]{Computerized Adaptive Testing \\for Public Opinion Surveys}
+\author[~  Montgomery (WUSTL) and Cutler (Duke) ]{Jacob Montgomery \\ \textit{Washington University in Saint Louis} \\ {\tiny and} \\  Josh Cutler \\ \textit{Duke University}}
+\date[SLAMM! 2012]{2012 Saint Louis Area Methods Meeting}
+
+
+\begin{document}
+%\frame{\titlepage}
+
+\frame{
+
+\bc
+\Large
+ \textbf{\red Computerized Adaptive testing \\for Public Opinion Surveys}\\
+
+
+\vp
+
+
+\begin{columns}[t] 
+\footnotesize
+\column{.6in} 
+\column{2in} 
+\bc
+\textbf{Jacob M. Montgomery}\\ 
+Dept. of Political Science\\ 
+Washington University in St. Louis\\
+jacob.montgomery@wustl.edu 
+\ec
+\column{.25in}
+\column{1.5in} 
+\bc
+\textbf{Joshua Cutler}\\ 
+Dept. of Political Science\\ 
+Duke University\\
+josh.cutler@gmail.com
+\ec
+\column{1in} 
+\end{columns}
+\ec
+
+
+
+}
+
+
+
+
+
+\section{Introduction}
+
+\frame{
+\frametitle{Talk overview}
+ \bi
+    \item \textbf{What and why}
+   \item Algorithm details
+    \item Simulations
+
+    \item Empirical application: political knowledge
+   \item Limitations and future directions
+    \item Survey software
+  \ei
+}
+
+
+
+\end{document}
+
+
+\frame
+{
+  \frametitle{What is CAT?}
+  
+\bis
+    \item Technique used in educational testing (e.g. GRE)
+    \item Used to measure latent traits ($\theta$)
+    \item Use \textit{previous responses} to select best \textit{next question}
+      \bi
+        \item ex., No benefit in asking ``high'' scoring individuals
+          easy questions
+        \item Identifying John Roberts $\rightarrow$ you can identify Joseph Biden 
+     \ei
+    \item Analogous to branching % Josh: Be ready to explain why we don't just use branching
+\ei
+}
+
+\frame
+{
+  \frametitle{Why should we use CAT?}
+  
+  \bis
+    \item Long batteries  raise costs and increase non-response
+   \item  Many resort to reduced scales
+    \item CAT provides:
+    \bi 
+      \item increased precision
+      \item increased accuracy
+    \ei
+  \item OK $\ldots$ prove it!
+  \ei
+}
+
+
+% \frame{
+% \skipslide
+% \frametitle{Talk overview}
+%  \bi
+%     \item What and why
+%    \item \textbf{Algorithm details}
+%    \item Simulations
+%    \item Survey software
+%     \item Empirical application: political knowledge
+%    \item Limitations and future directions
+%   \ei
+% }
+
+\section{Algorithm}
+
+\frame
+{
+  \frametitle{Algorithm overview}
+\bc
+      \includegraphics[scale=.6]{CAT_Diagram}
+\ec
+}
+
+
+
+\frame{
+  \frametitle{Algorithm details}
+  
+\begin{block}{3PL Logit}
+  $$ p_i(\theta_j) \equiv Pr(y_{ij}=1 | \theta_j) = c_i + (1-c_i) \frac{exp\big(Da_i(\theta_j-b_i) \big)}{1+ exp\big(Da_i(\theta_j-b_i)\big)}$$
+ \eb
+
+\vp
+
+\pause
+\begin{block}{Likelihood function}
+$$ L(\theta_j| \mathbf{y}_{k-1}) = \prod_{i=1}^{k-1} p_i(\theta_j)^{y_{ij}} q_i(\theta_j)^{(1-y_{ij})}$$
+\eb
+
+
+\vp
+Comments:
+\bi
+\item $q_i(\theta_j) = 1-p_i(\theta_j)$, 
+\item D=1 for logistic, D=1.702 for ``probit''
+\item $a_i$, $b_i$, and $c_i$ are given
+\ei
+
+
+}
+
+\frame
+{
+\frametitle{Algorithm details: Ability estimation}
+  
+\begin{block}{Expected \textit{a posteriori} (EAP) estimate}
+$$\hat{\theta}^{(EAP)}_j \equiv E(\theta_j | \mathbf{y}_{k-1})= \frac{\int \theta_j \pi(\theta) L(\theta|\mathbf{y}_{k-1})d\theta_j}{\int \pi(\theta) L(\theta|\mathbf{y}_{k-1}) d\theta_j}$$
+\eb
+
+\vp
+\vp
+
+Comments:
+\bis
+\item $\pi(\theta) \sim N(\mu_{\theta}, \frac{1}{\sqrt{\tau_\theta}})$
+\item Sensitive to prior selection: $\pi(\theta) \sim N(0, 1.75)$
+\item Estimated via Gauss-Hermite quadrature
+\item Common alternative is MAP
+\ei
+
+}
+
+
+
+\frame
+{
+\frametitle{Algorithm details: Item selection}
+  
+\begin{block}{Minimum expected posterior variance (MEPV)}
+$$\begin{array}{l}
+P(y^*_{ik}=1| \ykmg) \pause Var(\theta_j |\ykmg, y^*_{ik}=1) \pause+  \\
+~~~~~P(y^*_{ik}=0|\ykmg) Var(\theta_j | \ykmg, y^*_{ik}=0)
+\end{array}$$
+\eb
+\vp
+\pause
+\begin{block}{Posterior variance}
+$$ Var(\theta_j|\ykmg, y^*_{ik})=\pause \frac{\int (\theta_j-\hat{\theta}_j^{(EAP)*})^2 \pi(\theta)
+   L(\theta_j|\mathbf{y}_{k-1}, y^*_{kj})d\theta_j}{\int \pi(\theta)
+   L(\theta_j|\mathbf{y}_{k-1}, y^*_{kj}) d\theta_j}$$
+\eb
+
+
+\pause
+Comments:
+\bis
+\item \textit{Many} alternatives: including MFI, MEI, MLWI, MEPWI \\ (van der Linden 1998)
+\item (Relatively) expensive
+\item Favors items:
+\bi
+\item high discrimination
+\item close\textit{ish} difficulty parameter
+\ei
+\ei
+
+}
+
+
+\frame{
+\frametitle{Algorithm details: Stopping}
+
+\bis
+\item Fixed-length: $n>n_{max}$
+\item Variable-length: $1/Var(\theta_j) > \tau_{stop}$
+\ei
+
+}
+
+
+
+% \frame
+% {
+%   \frametitle{Algorithm details}
+  
+% \begin{block}{3PL Logit}
+%   $$ p_i(\theta_j) \equiv Pr(y_{ij}=1 | \theta_j) = c_i + (1-c_i) \frac{exp\big(Da_i(\theta-b_i) \big)}{1+ exp\big(Da_i(\theta-b_i)\big)}$$
+%  \eb
+
+% \vp
+
+% \pause
+% \begin{block}{Likelihood function}
+% $$ L(\theta_j| \mathbf{y}_{k-1}) = \prod_{i=1}^{k-1} p_i(\theta_j)^{y_{ij}} q_i(\theta_j)^{(1-y_{ij})}$$
+% \eb
+
+% }
+
+% \frame
+% {
+% \frametitle{Algorithm details: Ability estimation}
+  
+% \begin{block}{Expected \textit{a posteriori} (EAP) estimate}
+% $$\hat{\theta}^{(EAP)}_j \equiv E(\theta_j | \mathbf{y}_{k-1})= \frac{\int \theta_j \pi(\theta) L(\theta|\mathbf{y}_{k-1})d\theta_j}{\int \pi(\theta) L(\theta|\mathbf{y}_{k-1}) d\theta_j}$$
+% \eb
+
+% \vp
+% \vp
+% \pause
+% Comments:
+% \bis
+% \item $a_i$, $b_i$, and $c_i$ are given
+% \item Sensitive to prior selection: $\pi(\theta) \sim N(0, 1.75)$
+% \item Estimated via Gauss-Hermite quadrature
+% \ei
+
+% }
+
+
+
+% \frame
+% {
+% \frametitle{Algorithm details: Item selection}
+  
+% \begin{block}{Minimum expected posterior variance (MEPV)}
+% $$\begin{array}{l}
+% P(y^*_{ik}=1| \ykmg) \pause Var(\theta_j |\ykmg, y^*_{ik}=1) \pause+  \\
+% ~~~~~P(y^*_{ik}=0|\ykmg) Var(\theta_j | \ykmg, y^*_{ik}=0)
+% \end{array}$$
+% \eb
+
+% \vp
+% \vp
+% \pause
+% Comments:
+% \bis
+% \item \textit{Many} alternatives: including MFI, MEI, MLWI, MEPWI \\ (van der Linden 1998)
+% \item (Relatively) expensive
+% \item Favors items:
+% \bi
+% \item high discrimination
+% \item close\textit{ish} difficulty parameter
+% \ei
+% \ei
+
+% }
+
+% \frame{
+% \frametitle{Algorithm details: Stopping}
+
+% \bis
+% \item Fixed-length: $n>n_{max}$
+% \item Variable-length: $1/Var(\theta_j) > \tau_{stop}$
+% \ei
+
+% }
+
+\section{Simulations}
+
+\frame{
+\skipslide
+\frametitle{Talk overview}
+ \bi
+    \item What and why
+   \item Algorithm details
+   \item \textbf{Simulations}
+   \item Empirical application: political knowledge
+   \item Limitations and future directions
+   \item Survey software
+  \ei
+}
+
+
+\frame{
+\frametitle{Item characteristic curve (ICC) and posterior: Static scale }
+\bc
+\includegraphics[scale=.45]{ExFixedSlides1}
+\ec
+}
+
+\frame{ \skipslide
+\frametitle{Static scale}
+\bc
+\includegraphics[scale=.45]{ExFixedSlides2}
+\ec
+}
+
+
+\frame{ \skipslide
+\frametitle{Static scale}
+\bc
+\includegraphics[scale=.45]{ExFixedSlides3}
+\ec
+}
+
+
+\frame{ \skipslide
+\frametitle{Static scale}
+\bc
+\includegraphics[scale=.45]{ExFixedSlides4}
+\ec
+}
+
+\frame{ \skipslide
+\frametitle{Static scale}
+\bc
+\includegraphics[scale=.45]{ExFixedSlides5}
+\ec
+}
+
+\frame{
+\frametitle{Dynamic scale}
+\bc
+\includegraphics[scale=.45]{ExDynSlides1}
+\ec
+}
+
+
+\frame{ \skipslide
+\frametitle{Dynamic scale}
+\bc
+\includegraphics[scale=.45]{ExDynSlides2}
+\ec
+}
+
+\frame{ \skipslide
+\frametitle{Dynamic scale}
+\bc
+\includegraphics[scale=.45]{ExDynSlides3}
+\ec
+}
+
+
+\frame{ \skipslide
+\frametitle{Dynamic scale}
+\bc
+\includegraphics[scale=.45]{ExDynSlides4}
+\ec
+}
+
+\frame{ \skipslide
+\frametitle{Dynamic scale}
+\bc
+\includegraphics[scale=.45]{ExDynSlides5}
+\ec
+}
+
+
+
+\frame{
+%\frametitle{Fix me}
+
+
+\includegraphics[scale=.58]{MSE3SLIDES}
+
+
+}
+
+
+\section{Empirics}
+
+\frame{
+\skipslide
+\frametitle{Talk overview}
+ \bi
+    \item What and why
+   \item Algorithm details
+   \item Simulations
+   \item \textbf{Empirical application: political knowledge}
+   \item Limitations and future directions
+   \item Survey software
+  \ei
+}
+
+
+\frame{
+  \frametitle{Application: Political knowledge}
+  
+  \bis
+    \item Pilot survey: 38  political knowledge questions
+    % \bi
+    %  \item Widely used 
+    %  \item Widely criticized
+    %  \ei
+    \item Calibrated model with  AMT respondents (n=604)
+    \item Compared static and CAT scales with fresh sample (n=204)
+     \begin{itemize}
+        \item 101 assigned static 10-item battery
+        \item 103 assigned CAT 10-item  battery
+        \item Remaining 28 items administered to both groups
+      \end{itemize}
+  \end{itemize}
+}
+
+\frame
+{
+  \frametitle{Empirical Results}
+
+  \bis  
+    \item Computed ``real'' $\theta$ using all 38 responses
+    \item Computed Mean Squared Error $(\theta_j - \hat{\theta_j})^2 + Var(\hat{\theta_j})$ 
+  \ei
+}
+
+\frame
+{
+%  \frametitle{Fix me}
+ \includegraphics[scale=.58]{MSESurveySlides}
+}
+
+
+\frame
+{
+  \frametitle{Empirical Results}
+  \skipslide
+  \begin{itemize}
+    \item Computed ``real'' $\theta$ using all 38 responses
+    \item Computed Mean Squared Error $(\theta_j - \hat{\theta_j})^2 + Var(\hat{\theta_j})$ 
+    \item When n is small, CAT outperforms a static battery
+    \pause
+    \item Wilcoxon tests confirm
+  \end{itemize}
+}
+
+
+\section{Conclusion}
+
+\frame{
+\frametitle{Limitations}
+
+\bi
+\item Measures traits only
+\item Calibration required
+\item Question order
+\item Unstable calibration
+\ei
+
+}
+
+
+
+\frame
+{
+  \frametitle{Where to go from here?}
+  
+  \bi
+    \item Improve knowledge questions
+    \item Larger sample
+\pause
+  \item Informative priors
+\pause
+    \item Polytomous responses
+   \item Big-5 100 item inventory
+\pause
+    \item Investigate different selection criteria 
+  \ei
+}
+
+
+\frame
+{
+  \frametitle{Wrap up}
+  
+CAT provides:
+\bis
+\item More accuracy
+\item More precision
+\item Same low price
+\ei
+
+\pause
+\vp
+
+We showed:
+\bis
+\item How CAT works
+\item Why it works better (simulations)
+\item Empirical pilot study
+\ei
+
+
+
+\pause
+\vp
+
+Next:
+\bis
+\item Software
+\ei
+% \bc
+% \large{\red Thanks!}
+% \ec
+
+}
+
+
+
+\section{Software}
+
+
+
+
+\frame
+{
+
+  \frametitle{Our needs}
+  \bis
+    \item Flexibility
+    \item Modularity
+    \item Speed 
+    \item Burstability
+  \ei
+}
+
+\frame
+{
+
+  \frametitle{Our Solution}
+  \bis
+    \item Hosted in the Cloud (Heroku.com)
+    \item R Webservice using Rook
+    \item No MCMC right now, numerical integration
+    \item Ruby on Rails front end
+  \ei
+}
+
+\frame
+{
+%  \frametitle{Architecture Diagram}
+%  \begin{columns}
+ %   \column{.65\textwidth}
+ %   \begin{figure}
+\bc
+      \includegraphics[scale=.51]{Survey_Diagram}
+\ec
+%    \end{figure}
+    
+ %   \column{.35\textwidth}
+  %  { \small
+   %   \begin{enumerate}
+    %    \item RoR sends response pattern to Rook
+     %   \item Rook returns next best question with $\theta$ estimates
+      %  \item Unless stopping rule is reached, the question is administered
+       % \item The response is stored in the MYSQL DB
+       % \item Back to step 1
+      %\end{enumerate}
+    %}
+ % \end{columns}
+  
+}
+
+%  \frame
+%  {
+%    \frametitle{Demo}
+%  \bc
+% \href{www.fixthis.com}{Take the quiz!}
+% \ec
+%  }
+
+
+
+
+
+
+\appendix
+\newcounter{finalframe}
+\setcounter{finalframe}{\value{framenumber}}
+
+%\section{Extra math}
+
+
+
+\section{Example knowledge questions}
+
+
+
+\frame
+{
+  \frametitle{Static Battery - 1}
+  \begin{enumerate}
+    \item The ability of a minority of senators to prevent a vote on a bill is known as 
+  	\begin{itemize} 
+  		\item suspension of the rules
+  		\item enrollment
+  		\item a veto
+  		\item a fillibuster
+  	\end{itemize} 
+  	\item The President may NOT 
+  	\begin{itemize} 
+  		\item declare war
+  		\item pardon criminals without justification
+  		\item appoint federal officials when Congress is in recess
+  		\item refuse to sign legislation passed by Congress
+  	\end{itemize}
+ \end{enumerate}
+}
+
+\frame
+{
+  \frametitle{Static Battery - 2}
+  \begin{enumerate}
+ 	\item How many senators are elected from each state? 
+  	\begin{itemize} 
+  		\item It depends on the population of the state
+  		\item Four
+  		\item Two
+  		\item One
+  	\end{itemize}
+  	\item How long is one term for a member of the U.S. Senate? 
+  	\begin{itemize} 
+  		\item Eight years
+  		\item Six years
+  		\item Four years
+  		\item Two years
+  	\end{itemize}
+ \end{enumerate}
+}
+
+\frame
+{
+  \frametitle{Static Battery - 3}
+  \begin{enumerate}
+ 	\item The Secretary of State 
+  	\begin{itemize} 
+  		\item serves a two-year term
+  		\item serves the state governments
+  		\item is nominated by the president
+  		\item heads the armed services
+  	\end{itemize}
+  	\item The Byrd Rule is relevant 
+  	\begin{itemize} 
+  		\item during the confirmation of cabinet members
+  		\item for national party conventions
+  		\item during appropriations hearings
+  		\item for the reconciliation process
+  	\end{itemize}
+ \end{enumerate}
+}
+
+\frame
+{
+  \frametitle{Static Battery - 4}
+  \begin{enumerate}
+ 	 \item The NRA is an organization that advocates for 
+  	\begin{itemize} 
+  		\item election reform
+  		\item a cleaner environment
+  		\item the rights of gun owners
+  		\item abortion rights
+  	\end{itemize}
+  	\item A President may serve 
+  	\begin{itemize} 
+  		\item any number of terms
+  		\item three terms
+  		\item two terms
+  		\item one term
+  	\end{itemize}
+ \end{enumerate}
+}
+
+\frame
+{
+  \frametitle{Static Battery - 5}
+  \begin{enumerate}
+ 	\item On which of the following federal programs is the most money spent each year? 
+  	\begin{itemize} 
+  		\item Education
+  		\item Subsidies to farmers and agriculture
+  		\item Medicare
+  		\item Aid to foreign countries
+  	\end{itemize}
+  	\item The U.S. House of Representatives has how many voting members? 
+  	\begin{itemize} 
+  		\item 441
+  		\item 435
+  		\item 200
+  		\item 100
+  	\end{itemize}
+  \end{enumerate}
+}
+
+
+\section{Item-level parameters}
+
+\frame
+{
+  \frametitle{Item Level Parameter Estimates - 1}
+  
+  \begin{table}[scale=.5]
+    \label{cal-params}
+    \begin{center}
+      \footnotesize
+      \begin{tabular}{rrrrr}
+        Item & Guessing $(c_i)$& Difficulty $(b_i)$ & Discrimination $(a_i)$ & $P(x=1|\theta_j=0)$ \\ 
+        1 & 0.50 & 0.19 & 3.11 & 0.68 \\ 
+        2& 0.00 & -1.05 & 0.73 & 0.68 \\ 
+        \dag3& 0.25 & 0.49 & 3.74 & 0.35 \\ 
+        4& 0.23 & -0.35 & 0.84 & 0.67 \\ 
+        5 & 0.11 & 0.55 & 1.31 & 0.41 \\ 
+        \dag6 & 0.06 & -0.77 & 2.32 & 0.86 \\ 
+        7& 0.00 & -2.26 & 2.61 & 1.00 \\ 
+        \dag8 & 0.00 & -2.08 & 2.72 & 1.00 \\ 
+        \dag9 & 0.23 & -0.91 & 2.19 & 0.91 \\ 
+        10 & 0.00 & -2.64 & 1.66 & 0.99 \\ 
+        11 & 0.50 & 0.68 & 2.32 & 0.59 \\ 
+        12 & 0.31 & 0.49 & 2.85 & 0.45 \\ 
+        13 & 0.09 & 2.20 & 2.06 & 0.10 \\ 
+        14 & 0.34 & 0.67 & 1.92 & 0.49 \\ 
+        15& 0.00 & 2.29 & 0.27 & 0.35 \\ 
+      \end{tabular}
+    \end{center}
+    \footnotesize
+    $n=604$.  \dag Item included in 10-item fixed scale.
+  \end{table}
+}
+
+\frame
+{
+  \frametitle{Item Level Parameter Estimates - 2}
+  
+  \begin{table}[scale=.5]
+    \label{cal-params}
+    \begin{center}
+      \footnotesize
+      \begin{tabular}{rrrrr}
+        Item & Guessing $(c_i)$& Difficulty $(b_i)$ & Discrimination $(a_i)$ & $P(x=1|\theta_j=0)$ \\ 
+        \dag16 & 0.11 & 0.56 & 2.56 & 0.28 \\ 
+        17 & 0.14 & -1.35 & 0.79 & 0.78 \\ 
+        18 & 0.01 & -1.46 & 0.66 & 0.72 \\ 
+        \dag19 & 0.37 & 1.03 & 2.94 & 0.40 \\ 
+        20 & 0.00 & -1.63 & 0.49 & 0.69 \\ 
+        \dag21 & 0.18 & 1.88 & 4.47 & 0.18 \\ 
+        22 & 0.00 & -2.56 & 0.69 & 0.85 \\ 
+        23& 0.17 & 0.68 & 2.43 & 0.30 \\ 
+        24 & 0.24 & 0.39 & 2.39 & 0.45 \\ 
+        25 & 0.50 & -1.14 & 2.19 & 0.96 \\ 
+        26 & 0.00 & -1.31 & 1.15 & 0.82 \\ 
+        27 & 0.33 & -0.61 & 2.24 & 0.86 \\ 
+        28 & 0.00 & -2.43 & 1.06 & 0.93 \\ 
+        \dag29 & 0.19 & -1.54 & 2.27 & 0.98 \\ 
+        30 & 0.23 & 0.25 & 1.11 & 0.56 \\ 
+      \end{tabular}
+    \end{center}
+    \footnotesize
+    $n=604$.  \dag Item included in 10-item fixed scale.
+  \end{table}
+}
+
+\frame
+{
+  \frametitle{Item Level Parameter Estimates - 3}
+  
+  \begin{table}[scale=.5]
+    \label{cal-params}
+    \begin{center}
+      \footnotesize
+      \begin{tabular}{rrrrr}
+        Item & Guessing $(c_i)$& Difficulty $(b_i)$ & Discrimination $(a_i)$ & $P(x=1|\theta_j=0)$ \\ 
+        31 & 0.22 & -1.06 & 2.03 & 0.92 \\ 
+        32 & 0.23 & -0.41 & 1.78 & 0.75 \\ 
+        33 & 0.50 & -1.36 & 1.83 & 0.96 \\ 
+        \dag34 & 0.34 & -0.02 & 2.95 & 0.68 \\ 
+        35 & 0.10 & -1.90 & 2.04 & 0.98 \\ 
+        \dag36 & 0.23 & 0.20 & 1.63 & 0.56 \\ 
+        37 & 0.15 & 0.23 & 1.27 & 0.51 \\ 
+        38 & 0.00 & -2.58 & 1.21 & 0.96 \\ 
+      \end{tabular}
+    \end{center}
+    \footnotesize
+    $n=604$.  \dag Item included in 10-item fixed scale.
+  \end{table}
+}
+
+
+\setcounter{framenumber}{\value{finalframe}}
+
+\end{document}

@@ -1,0 +1,406 @@
+
+
+
+library(foreign)
+setwd("/Users/jmontgomery/Dropbox/EBMA/PRESIDENTIAL DATA for Jacob/")
+data<-read.dta("Erikson_Wlezien_Data.dta")
+summary(data)
+
+
+data1<-data[data$Year>=1952,]
+
+
+
+################ Erikson_Wlezien column 2 in table 2 2008, i.e. second quarter models for all years 
+
+
+### for 1976
+data1976<-data1[data1$Year<=1972,]
+data1976.2<-subset(data1976,Cycle==14)	
+x76<-lm(IncumbentVote~ l1CumLEIGrowth + IncumbentPoll,data=data1976.2)
+summary(x76)
+var76<-subset(data1,Year==1976 & Cycle==14)
+predict.lm(x76,var76,interval="confidence",level=0.95)
+
+### for 1980
+data1980<-data1[data1$Year<=1976,]
+data1980.2<-subset(data1980,Cycle==14)	
+x80<-lm(IncumbentVote~ l1CumLEIGrowth + IncumbentPoll,data=data1980.2)
+summary(x80)
+var80<-subset(data1,Year==1980 & Cycle==14)
+predict.lm(x80,var80,interval="confidence",level=0.95)
+
+### for 1984
+data1984<-data1[data1$Year<=1980,]
+data1984.2<-subset(data1984,Cycle==14)	
+x84<-lm(IncumbentVote~ l1CumLEIGrowth + IncumbentPoll,data=data1984.2)
+summary(x84)
+var84<-subset(data1,Year==1984 & Cycle==14)
+predict.lm(x84,var84,interval="confidence",level=0.95)
+
+### for 1988
+data1988<-data1[data1$Year<=1984,]
+data1988.2<-subset(data1988,Cycle==14)	
+x88<-lm(IncumbentVote~ l1CumLEIGrowth + IncumbentPoll,data=data1988.2)
+summary(x88)
+var88<-subset(data1,Year==1988 & Cycle==14)
+predict.lm(x88,var88,interval="confidence",level=0.95)
+
+### for 1992
+data1992<-data1[data1$Year<=1988,]
+data1992.2<-subset(data1992,Cycle==14)	
+x92<-lm(IncumbentVote~ l1CumLEIGrowth + IncumbentPoll,data=data1992.2)
+summary(x92)
+var92<-subset(data1,Year==1992 & Cycle==14)
+predict.lm(x92,var92,interval="confidence",level=0.95)
+
+### for 1996
+data1996<-data1[data1$Year<=1992,]
+data1996.2<-subset(data1996,Cycle==14)	
+x96<-lm(IncumbentVote~ l1CumLEIGrowth + IncumbentPoll,data=data1996.2)
+summary(x96)
+var96<-subset(data1,Year==1996 & Cycle==14)
+predict.lm(x96,var96,interval="confidence",level=0.95)
+
+### for 2000
+data2000<-data1[data1$Year<=1996,]
+data2000.2<-subset(data2000,Cycle==14)	
+x00<-lm(IncumbentVote~ l1CumLEIGrowth + IncumbentPoll,data=data2000.2)
+summary(x00)
+var00<-subset(data1,Year==2000 & Cycle==14)
+predict.lm(x00,var00,interval="confidence",level=0.95)
+
+### for 2004
+data2004<-data1[data1$Year<=2000,]
+data2004.2<-subset(data2004,Cycle==14)	
+x04<-lm(IncumbentVote~ l1CumLEIGrowth + IncumbentPoll,data=data2004.2)
+summary(x04)
+var04<-subset(data1,Year==2004 & Cycle==14)
+predict.lm(x04,var04,interval="confidence",level=0.95)
+
+
+### for 2004
+data2004<-data1[data1$Year<=2000,]
+data2004.2<-subset(data2004,Cycle==14)	
+x04<-lm(IncumbentVote~ l1CumLEIGrowth + IncumbentPoll,data=data2004.2)
+summary(x04)
+var04<-subset(data1,Year==2004 & Cycle==14)
+predict.lm(paper04,var04,interval="confidence",level=0.95)
+
+
+############ IF you want to you can use this prediction for 2004 for erikson, it comes the closes to their reported results in 2004, ###### 			I don't know how to get any closer to their results, this is already weird and using the data for 2004 they specify #########in the article
+data2004.1<-subset(data2004,Cycle==13)	
+paper2004<-as.data.frame(cbind(data2004.1$IncumbentVote,data2004.1$CumLEIGrowth,data2004.2$Approval))
+names(paper2004)<-c("IncumbentVote","CumLEIGrowth","Approval")
+paper04<-lm(IncumbentVote ~ CumLEIGrowth + Approval,data=paper2004)
+summary(paper04)
+var04paper<-as.data.frame(cbind(2004,14,51.25,48,0.4746016,48,0.195,343,3443,34,34,34))
+names(var04paper)<-names(var04)
+predict.lm(paper04,var04paper,interval="confidence",level=0.95)
+
+
+
+
+### for 2008
+data2008<-data1[data1$Year<=2004,]
+data2008.2<-subset(data2008,Cycle==14)	
+x08<-lm(IncumbentVote~ l1CumLEIGrowth + IncumbentPoll,data=data2008.2)
+summary(x08)
+var08<-subset(data1,Year==2008 & Cycle==14)
+predict.lm(x08,var08,interval="confidence",level=0.95)
+
+############################# Fair model
+#####################
+
+####################
+###############
+####### ACHTUNG--------FAIR PREDICTS DEM VOTESHARE - not incumbent
+
+fair<-read.csv("Fair_Data.csv")
+summary(fair)
+fair1<-subset(fair,Year>=1916)
+
+test1<-lm(VP~G:I+P:I+Z:I+DPER+DUR+I+WAR,data=fair1) ####same results as in Fair2010, table 2, equation 1
+summary(test1)
+
+########2008
+fair2008<-subset(fair, Year>=1916 & Year<2008)
+f08<-lm(VP~G:I+P:I+Z:I+DPER+DUR+I+WAR,data=fair2008)
+summary(f08)
+var08<-subset(fair,Year==2008)
+predict.lm(f08,var08,interval="confidence",level=0.95)
+
+#######2004
+fair2004<-subset(fair, Year>=1916 & Year<2004)
+f04<-lm(VP~G:I+P:I+Z:I+DPER+DUR+I+WAR,data=fair2004)
+summary(f04)
+var04<-subset(fair,Year==2004)
+predict.lm(f04,var04,interval="confidence",level=0.95)
+
+#######2000
+fair2000<-subset(fair, Year>=1916 & Year<2000)
+f00<-lm(VP~G:I+P:I+Z:I+DPER+DUR+I+WAR,data=fair2000)
+summary(f00)
+var00<-subset(fair,Year==2000)
+predict.lm(f00,var00,interval="confidence",level=0.95)
+
+
+#######1996
+fair1996<-subset(fair, Year>=1916 & Year<1996)
+f96<-lm(VP~G:I+P:I+Z:I+DPER+DUR+I+WAR,data=fair1996)
+summary(f96)
+var96<-subset(fair,Year==1996)
+predict.lm(f96,var96,interval="confidence",level=0.95)
+
+
+#######1992
+fair1992<-subset(fair, Year>=1916 & Year<1992)
+f92<-lm(VP~G:I+P:I+Z:I+DPER+DUR+I+WAR,data=fair1992)
+summary(f92)
+var92<-subset(fair,Year==1992)
+predict.lm(f92,var92,interval="confidence",level=0.95)
+
+#########1988
+fair1988<-subset(fair, Year>=1916 & Year<1988)
+f88<-lm(VP~G:I+P:I+Z:I+DPER+DUR+I+WAR,data=fair1988)
+summary(f88)
+var88<-subset(fair,Year==1988)
+predict.lm(f88,var88,interval="confidence",level=0.95)
+
+#########1984
+fair1984<-subset(fair, Year>=1916 & Year<1984)
+f84<-lm(VP~G:I+P:I+Z:I+DPER+DUR+I+WAR,data=fair1984)
+summary(f84)
+var84<-subset(fair,Year==1984)
+predict.lm(f84,var84,interval="confidence",level=0.95)
+
+#########1980
+fair1980<-subset(fair, Year>=1916 & Year<1980)
+f80<-lm(VP~G:I+P:I+Z:I+DPER+DUR+I+WAR,data=fair1980)
+summary(f80)
+var80<-subset(fair,Year==1980)
+predict.lm(f80,var80,interval="confidence",level=0.95)
+
+
+#########1976
+fair1976<-subset(fair, Year>=1916 & Year<1976)
+f76<-lm(VP~G:I+P:I+Z:I+DPER+DUR+I+WAR,data=fair1976)
+summary(f76)
+var76<-subset(fair,Year==1976)
+predict.lm(f76,var76,interval="confidence",level=0.95)
+
+
+
+
+####################### Lewis-Beck model 
+rm(list=ls(all=TRUE))
+
+lewis<-read.csv("/Users/florianhollenbach/Dropbox/EBMA/PRESIDENTIAL DATA for Jacob/Lewis-Beck_Tien_Data.csv")
+summary(lewis)
+
+
+############ 2008
+lewis2008<-subset(lewis,YEAR>=1952 & YEAR<=2004)
+l08<-lm(POP2PVOT~ JULYPOP+ INCXGNP + JOBHOUSU +CLOSEINC,data=lewis2008)
+summary(l08)
+vl08<-subset(lewis,YEAR==2008)
+predict.lm(l08,vl08,interval="confidence",level=0.95)
+######can NOT get the exact result from lewis-beck 2008, constant off by 0.82
+
+
+
+############ 2004
+lewis2004<-subset(lewis,YEAR>=1952 & YEAR<=2000)
+l04<-lm(POP2PVOT~ JULYPOP+ INCXGNP + JOBHOUSU +CLOSEINC,data=lewis2004)
+summary(l04)
+vl04<-subset(lewis,YEAR==2004)
+predict.lm(l04,vl04,interval="confidence",level=0.95)
+
+
+############ 2000
+lewis2000<-subset(lewis,YEAR>=1952 & YEAR<=1996)
+l00<-lm(POP2PVOT~ JULYPOP+ INCXGNP + JOBHOUSU +CLOSEINC,data=lewis2000)
+summary(l00)
+vl00<-subset(lewis,YEAR==2000)
+predict.lm(l00,vl00,interval="confidence",level=0.95)
+
+
+############ 1996
+lewis1996<-subset(lewis,YEAR>=1952 & YEAR<=1992)
+l96<-lm(POP2PVOT~ JULYPOP+ INCXGNP + JOBHOUSU +CLOSEINC,data=lewis1996)
+summary(l96)
+vl96<-subset(lewis,YEAR==1996)
+predict.lm(l96,vl96,interval="confidence",level=0.95)
+
+
+############ 1992
+lewis1992<-subset(lewis,YEAR>=1952 & YEAR<=1988)
+l92<-lm(POP2PVOT~ JULYPOP+ INCXGNP + JOBHOUSU +CLOSEINC,data=lewis1992)
+summary(l92)
+vl92<-subset(lewis,YEAR==1992)
+predict.lm(l92,vl92,interval="confidence",level=0.95)
+
+
+############ 1988
+lewis1988<-subset(lewis,YEAR>=1952 & YEAR<=1984)
+l88<-lm(POP2PVOT~ JULYPOP+ INCXGNP + JOBHOUSU +CLOSEINC,data=lewis1988)
+summary(l88)
+vl88<-subset(lewis,YEAR==1988)
+predict.lm(l88,vl88,interval="confidence",level=0.95)
+
+
+############ 1984
+lewis1984<-subset(lewis,YEAR>=1952 & YEAR<=1980)
+l84<-lm(POP2PVOT~ JULYPOP+ INCXGNP + JOBHOUSU +CLOSEINC,data=lewis1984)
+summary(l84)
+vl84<-subset(lewis,YEAR==1984)
+predict.lm(l84,vl84,interval="confidence",level=0.95)
+
+############ 1980
+lewis1980<-subset(lewis,YEAR>=1952 & YEAR<=1976)
+l80<-lm(POP2PVOT~ JULYPOP+ INCXGNP + JOBHOUSU +CLOSEINC,data=lewis1980)
+summary(l80)
+vl80<-subset(lewis,YEAR==1980)
+predict.lm(l80,vl80,interval="confidence",level=0.95)
+
+############ 1976
+lewis1976<-subset(lewis,YEAR>=1952 & YEAR<=1972)
+l76<-lm(POP2PVOT~ JULYPOP+ INCXGNP + JOBHOUSU +CLOSEINC,data=lewis1976)
+summary(l76)
+vl76<-subset(lewis,YEAR==1976)
+predict.lm(l76,vl76,interval="confidence",level=0.95)
+
+
+
+####################	Abramowitz
+rm(list=ls(all=TRUE))
+Abram<-read.csv("Abramowitz_data.csv")
+summary(Abram)
+
+abram2008<-subset(Abram,year<=2004)
+a08<-lm(vote ~ q2gdp + term+ juneapp,data=abram2008)
+summary(a08)
+v08<-subset(Abram,year==2008)
+var08<-as.data.frame(cbind(1,v08$q2gdp,v08$term,v08$juneapp))
+predict.lm(a08,v08,interval="confidence",level=0.95)
+
+abram2004<-subset(Abram,year<=2000)
+a04<-lm(vote ~ q2gdp + term+ juneapp,data=abram2004)
+summary(a04)
+v04<-subset(Abram,year==2004)
+predict.lm(a04,v04,interval="confidence",level=0.95)
+
+abram2000<-subset(Abram,year<=1996)
+a00<-lm(vote ~ q2gdp + term+ juneapp,data=abram2000)
+summary(a00)
+v00<-subset(Abram,year==2000)
+predict.lm(a00,v00,interval="confidence",level=0.95)
+
+abram1996<-subset(Abram,year<=1992)
+a96<-lm(vote ~ q2gdp + term+ juneapp,data=abram1996)
+summary(a96)
+v96<-subset(Abram,year==1996)
+predict.lm(a96,v96,interval="confidence",level=0.95)
+
+
+abram1992<-subset(Abram,year<=1988)
+a92<-lm(vote ~ q2gdp + term+ juneapp,data=abram1992)
+summary(a92)
+v92<-subset(Abram,year==1992)
+predict.lm(a92,v92,interval="confidence",level=0.95)
+
+abram1988<-subset(Abram,year<=1984)
+a88<-lm(vote ~ q2gdp + term+ juneapp,data=abram1988)
+summary(a88)
+v88<-subset(Abram,year==1988)
+predict.lm(a88,v88,interval="confidence",level=0.95)
+
+abram1984<-subset(Abram,year<=1980)
+a84<-lm(vote ~ q2gdp + term+ juneapp,data=abram1984)
+summary(a84)
+v84<-subset(Abram,year==1984)
+predict.lm(a84,v84,interval="confidence",level=0.95)
+
+abram1980<-subset(Abram,year<=1976)
+a80<-lm(vote ~ q2gdp + term+ juneapp,data=abram1980)
+summary(a80)
+v80<-subset(Abram,year==1980)
+predict.lm(a80,v80,interval="confidence",level=0.95)
+
+abram1976<-subset(Abram,year<=1972)
+a76<-lm(vote ~ q2gdp + term+ juneapp,data=abram1976)
+summary(a76)
+v76<-subset(Abram,year==1976)
+predict.lm(a76,v76,interval="confidence",level=0.95)
+
+
+############campbell
+rm(list=ls(all=TRUE))
+
+campbell<-read.csv("/Users/florianhollenbach/Dropbox/EBMA/PRESIDENTIAL DATA for Jacob/Campbell_Data.csv")
+summary(campbell)
+
+
+#############2008
+cam2008<-subset(campbell,ELECTION<=2004)
+c08<-lm(INPTYVOTE~ SEPTPOLL+GDPQTR2HALF,data=cam2008)
+summary(c08)
+vc08<-subset(campbell,ELECTION==2008,interval="confidence",level=0.95)
+predict.lm(c08,vc08,interval="confidence",level=0.95)
+
+#############2004
+cam2004<-subset(campbell,ELECTION<=2000)
+c04<-lm(INPTYVOTE~ SEPTPOLL+GDPQTR2HALF,data=cam2004)
+summary(c04)
+vc04<-subset(campbell,ELECTION==2004)
+predict.lm(c04,vc04,interval="confidence",level=0.95)
+help(predict.lm)
+
+#############2000
+cam2000<-subset(campbell,ELECTION<=1996)
+c00<-lm(INPTYVOTE~ SEPTPOLL+GDPQTR2HALF,data=cam2000)
+summary(c00)
+vc00<-subset(campbell,ELECTION==2000)
+predict.lm(c00,vc00,interval="confidence",level=0.95)
+
+#############1996
+cam1996<-subset(campbell,ELECTION<=1992)
+c96<-lm(INPTYVOTE~ SEPTPOLL+GDPQTR2HALF,data=cam1996)
+summary(c96)
+vc96<-subset(campbell,ELECTION==1996)
+predict.lm(c96,vc96,interval="confidence",level=0.95)
+
+#############1992
+cam1992<-subset(campbell,ELECTION<=1988)
+c92<-lm(INPTYVOTE~ SEPTPOLL+GDPQTR2HALF,data=cam1992)
+summary(c92)
+vc92<-subset(campbell,ELECTION==1992)
+predict.lm(c92,vc92,interval="confidence",level=0.95)
+
+#############1988
+cam1988<-subset(campbell,ELECTION<=1984)
+c88<-lm(INPTYVOTE~ SEPTPOLL+GDPQTR2HALF,data=cam1988)
+summary(c88)
+vc88<-subset(campbell,ELECTION==1988)
+predict.lm(c88,vc88,interval="confidence",level=0.95)
+
+#############1984
+cam1984<-subset(campbell,ELECTION<=1980)
+c84<-lm(INPTYVOTE~ SEPTPOLL+GDPQTR2HALF,data=cam1984)
+summary(c84)
+vc84<-subset(campbell,ELECTION==1984)
+predict.lm(c84,vc84,interval="confidence",level=0.95)
+
+#############1980
+cam1980<-subset(campbell,ELECTION<=1976)
+c80<-lm(INPTYVOTE~ SEPTPOLL+GDPQTR2HALF,data=cam1980)
+summary(c80)
+vc80<-subset(campbell,ELECTION==1980)
+predict.lm(c80,vc80,interval="confidence",level=0.95)
+
+#############1976
+cam1976<-subset(campbell,ELECTION<=1972)
+c76<-lm(INPTYVOTE~ SEPTPOLL+GDPQTR2HALF,data=cam1976)
+summary(c76)
+vc76<-subset(campbell,ELECTION==1976)
+predict.lm(c76,vc76,interval="confidence",level=0.95)

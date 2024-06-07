@@ -1,0 +1,52 @@
+This is BibTeX, Version 0.99d (TeX Live 2010)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: EBMASingleSpaced.aux
+The style file: chicago.bst
+Database file #1: Flo_Bib.bib
+Warning--missing author in Choucri:Robinson:1978
+Warning--no number and no volume in Feldkircher:2010
+Warning--no number and no volume in Fraley:Forthcoming
+Warning--empty organization in Fraley:2010b
+Warning--no number and no volume in Greenhill:2011
+You've used 101 entries,
+            2861 wiz_defined-function locations,
+            1263 strings with 22704 characters,
+and the built_in function-call counts, 70800 in all, are:
+= -- 5875
+> -- 5331
+< -- 1
++ -- 1602
+- -- 1834
+* -- 6582
+:= -- 12997
+add.period$ -- 305
+call.type$ -- 101
+change.case$ -- 739
+chr.to.int$ -- 101
+cite$ -- 106
+duplicate$ -- 1779
+empty$ -- 4212
+format.name$ -- 2110
+if$ -- 13063
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 92
+newline$ -- 508
+num.names$ -- 1015
+pop$ -- 453
+preamble$ -- 1
+purify$ -- 1351
+quote$ -- 0
+skip$ -- 1903
+stack$ -- 0
+substring$ -- 3877
+swap$ -- 578
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 1970
+warning$ -- 5
+while$ -- 982
+width$ -- 0
+write$ -- 1325
+(There were 5 warnings)

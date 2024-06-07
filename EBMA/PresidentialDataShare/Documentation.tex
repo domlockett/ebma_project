@@ -1,0 +1,130 @@
+\documentclass[pdftex,12pt,fullpage,oneside]{amsart}
+\usepackage{array,amsmath,psfrag,amssymb,subfigure,tabularx}
+\usepackage{hyperref,multicol}
+\usepackage{booktabs}
+\usepackage{vmargin,boxedminipage}
+\usepackage[usenames]{color}
+\usepackage{datetime}
+\usepackage{dcolumn}
+\usepackage{wrapfig}
+\usepackage{setspace}
+\usepackage{url}
+\usepackage[english]{babel}
+\usepackage{times}
+\usepackage{multirow}
+\usepackage[pdftex]{graphicx}
+\usepackage{lscape}
+\usepackage{multicol}
+\usepackage[top=2in,right=0in,left=2in,bottom=1in]{geometry}
+\usepackage{array}
+\usepackage{dcolumn}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\graphicspath{{graphics/}}
+
+%\usepackage[authoryear,sort&compress]{natbib}
+\usepackage{natbib}
+
+\title{Data Documentation for Presidential Forecast Data} \thanks{For generously sharing their data and models with
+    us, we thank Alan Abramowitz, James Campbell, Robert Erikson, Ray
+    Fair, Douglas Hibbs, Michael Lewis-Beck, Andrew D. Martin, Kevin
+    Quinn, Stephen Shellman, Charles Tien, \& Christopher Wlezien.
+    This project was undertaken in the framework of an initiative
+    funded by the Information Processing Technology Office of the
+    Defense Advanced Research Projects Agency aimed at producing
+    models to provide an Integrated Crisis Early Warning Systems
+    (ICEWS) for decision makers in the U.S. defense community. The
+    holding grant is to the Lockheed Martin Corporation, Contract
+    FA8650-07-C-7749. All the bad ideas and mistakes are our own.}
+
+
+\author[J.M. Montgomery]{Jacob M. Montgomery}
+\address{Professor J.M. Montgomery, Department of Political Science, Washington University in St. Louis, Campus Box 1063, One Brookings Drive, St. Louis, MO, USA, 63130-4899}
+\email{\url{brian.d.greenhill@dartmouth.edu}}
+
+\author[F. M. Hollenbach]{Florian M. Hollenbach}
+\address{Mr. Florian Hollenbach, Department of Political Science, Duke University, Durham, NC, USA, 27708}
+\email{\url{florian.hollenbach@duke.edu}}
+
+\author[M.D. Ward]{Michael D. Ward}
+\address{Professor M.D. Ward, Department of Political Science, Duke University, Durham, NC, USA, 27708}
+\email{\url{michael.d.ward@duke.edu}}
+
+\date{\today}
+
+
+\begin{document}
+
+\maketitle
+
+
+\section*{Introduction}
+\textbf{Data Files:} This folder includes one file for each presidential forecast model included in \citet{Montgomery_etal_2012}. A short description of the variables used for each model is included below.
+
+
+\section*{Abramowitz Data}
+\begin{itemize}
+\item \textbf{q2gdp} - quarter 2 GDP growth
+\item \textbf{term} - indicator for first or second term
+\item \textbf{juneapp} - June approval rating
+\item See \citet{Abramowitz:2008} for more detail
+\end{itemize}
+
+\section*{Campbell Data}
+\begin{itemize}
+\item \textbf{INPTYVOTE} -- incumbent party vote
+\item \textbf{SEPTPOLL} -- Early September Preference Poll
+\item \textbf{GDPQTR2HALF} -- 2nd qtr. real GDP growth (annualized) ? 2.5 with half-credit for successor candidates
+\item \textbf{PRECNVENTION} -- Pre-Convention Preference Poll
+\item \textbf{CONBUMP} -- Net Convention Bump
+\item See \citet{Campbell:2008} for more detail
+\end{itemize}
+
+
+\section*{Erikson Wlezien Data}
+\begin{itemize}
+\item \textbf{IncumbentPoll} -- Trial heat poll results for the incumbent
+\item \textbf{l1CumLEIGrowth} - Cumulative LEI growth lagged by one
+\item See \citet{Erikson:Wlezien:2008} for more detail
+\end{itemize}
+
+\section*{Fair Data}
+\begin{itemize}
+\item \textbf{VP} -- Democratic share of the two-party presidential vote
+\item \textbf{G} -- Growth rate of real per capita GDP in the first three quarters of the on-term election year (annual rate)
+\item \textbf{I} -- $1$ if there is a Democratic presidential incumbent at the time of the election and $?1$ if  is a Republican presidential incumbent
+\item \textbf{P} - absolute value of the growth rate of the GDP deﬂator in the first 15 quarters of the administration (annual rate) except for 1920, 1944, and 1948, where the values are zero
+\item \textbf{Z} -- number of quarters in the ﬁrst 15 quarters of the administration in which the growth rate of real per capita GDP is greater than 3.2 percent at an annual rate except for 1920, 1944, and 1948, where the values are zero
+\item \textbf{DUR} -- $0$ if either party has been in the White House for one term, $1$ ($-1$) if the Democratic (Republican) party has been in the White House for two consecutive terms, $1.25$ ($-1.25$) if the Democratic (Republican) party has been in the White House for three consecutive terms, $1.50$ ($-1.50$) if the Democratic (Republican) party has been in the White House for four consecutive terms, and so on
+\item \textbf{DPER} -- $1$ if a Democratic presidential incumbent is running again, $-1$ if a Republican presidential incumbent is running again, and 0 otherwise\item \textbf{WAR} -- 1 for the elections of 1918, 1920, 1942, 1944, 1946, and 1948, and 0 otherwise
+\item See \citet{Fair:2010} for more detail
+\end{itemize}
+
+\section*{Hibbs Data}
+\begin{itemize}
+\item All variables are taken from Douglas Hibb's website
+\item Please see \citet{Hibbs2011} for more detail
+\end{itemize}
+
+\section*{Lewis-Beck Tien Data}
+\begin{itemize}
+\item \textbf{POP2PVOT} -- Two party vote
+\item \textbf{JOBHOUSU} -- jobs growth, in percentage change in jobs over the first 3.5 years of the president’s term
+\item \textbf{CLOSEINC} -- Incumbent party advantage, scored 1 if the incumbent party candidate is the elected President
+\item \textbf{JULYPOP} -- Presidential popularity in July of election year, measured by Gallop
+\item \textbf{GNPCHAN} -- Gross national product, as percentage change (non-annualized) in GNP (constant dollars) from the fourth quarter of the year prior to the election to the second quarter of the election year, data from the Survey of Current Business
+\item \textbf{IINCXGDP} -- Interaction of GDPCHAN variable of elected president running (scored 1) or not (scored 0.5)
+\item See \citet{Lewis-Beck:Tien:2008} for more detail
+\end{itemize}
+
+
+
+\bibliographystyle{apsr}
+\bibliography{Flo_Bib}
+
+\newpage
+
+Contact information for authors:
+
+\end{document}
+\bye

@@ -1,0 +1,137 @@
+* using log directory ‘/Volumes/ICEWS Project/BMA Stuffs/EBMAforecast.Rcheck’
+* using R version 2.12.0 (2010-10-15)
+* using platform: x86_64-apple-darwin9.8.0 (64-bit)
+* using session charset: UTF-8
+* checking for file ‘EBMAforecast/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘EBMAforecast’ version ‘0.2’
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking for executable files ... OK
+* checking whether package ‘EBMAforecast’ can be installed ... OK
+* checking package directory ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
+* checking index information ... WARNING
+Demos with missing or empty index information:
+[1] "EBMAforecast"
+See the information on INDEX files and package subdirectories in the
+chapter 'Creating R packages' of the 'Writing R Extensions' manual.
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking for unstated dependencies in R code ... OK
+* checking S3 generic/method consistency ... WARNING
+print:
+  function(x, ...)
+print.Ensemble.logit:
+  function(obj, digits)
+
+plot:
+  function(x, ...)
+plot.Ensemble.logit:
+  function(obj)
+
+predict:
+  function(object, ...)
+predict.Ensemble.logit:
+  function(obj, newdata, y.out)
+
+See section 'Generic functions and methods' of the 'Writing R
+Extensions' manual.
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... OK
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... WARNING
+Undocumented code objects:
+  plot.Ensemble.logit print.Ensemble.logit
+All user-level objects in a package should have documentation entries.
+See the chapter 'Writing R documentation files' in manual 'Writing R
+Extensions'.
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... NOTE
+S3 methods shown with full name in documentation object 'predict.Ensemble.logit':
+  predict.Ensemble.logit
+
+The \usage entries for S3 methods should use the \method markup and not
+their full name.
+See the chapter 'Writing R documentation files' in manual 'Writing R
+Extensions'.
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking data for non-ASCII characters ... OK
+* checking examples ... ERROR
+Running examples in ‘EBMAforecast-Ex.R’ failed
+The error most likely occurred in:
+
+> ### Name: EBMAforecast-package
+> ### Title: Ensemble BMA For Binary Dependent Variables
+> ### Aliases: EBMAforecast-package EBMAforecast
+> ### Keywords: package
+> 
+> ### ** Examples
+> 
+> demo(EBMAforecast)
+
+
+	demo(EBMAforecast)
+	---- ~~~~~~~~~~~~
+
+> # Ensemble.ICEWS demo file
+> #
+> # last updated 3/3/2011 by JMM
+> 
+> ##### New code here
+> 
+> data(Insample)
+
+> data(Outsample)
+
+> ################################################
+> # This is the analysis *WITHOUT* the ICEWS model
+> ################################################
+> 
+> in.data <- cbind(Insample[,"Polisci"], Insample[,"Glm.Econ"], Insample[,"Lmer3"], Insample[,"Glm.simple"],
++                  Insample[,"Lmer.all"], Insample[,"SAE"])
+
+> colnames(in.data)<-c("Polisci", "GLM.Econ", "Lmer3", "Glm.simple", "Lmer.all", "SAE")
+
+> out.data <- cbind(Outsample[,"Polisci"], Outsample[,"Glm.Econ"], Outsample[,"Lmer3"], Outsample[,"Glm.simple"],
++                  Outsample[,"Lmer.all"], Outsample[,"SAE"])
+
+> y.in <- Insample$Insurgency
+
+> y.out <- Outsample$Insurgency
+
+> # Fit the BMA Model
+> BMA.fit <- Ensemble.logit(y=y.in, pp.raw=in.data, tol=.001, exp=4)
+
+> # These are the within-sample model statistics/estimates for the parameters shown in the paper
+> print.Ensemble.logit(BMA.fit)
+           Weight Constant Predictor   AUC   PRE Brier % Correct
+Polisci     0.477    0.187     7.884 0.968 0.408 0.043      93.3
+GLM.Econ    0.000    0.613     8.322 0.608 0.000 0.099      88.6
+Lmer3       0.148    6.076    28.253 0.958 0.013 0.070      88.8
+Glm.simple  0.000    0.567     8.156 0.645 0.000 0.100      88.6
+Lmer.all    0.011    4.562    23.408 0.933 0.008 0.072      88.7
+SAE         0.364    0.038     7.463 0.956 0.481 0.043      94.1
+BMA           -        -         -   0.976 0.481 0.039      94.1
+                              
+Bias correction parameter = 4 
+                              
+Number of observations = 3480 
+
+> # Within-sample plots
+> plot.Ensemble.logit(BMA.fit)
+Error in separationplot(pred = obj$pred.prob, actual = obj$dv, heading = "BMA") : 
+  F used instead of FALSE
+Calls: demo ... eval.with.vis -> plot.Ensemble.logit -> separationplot
+Execution halted

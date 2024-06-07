@@ -1,0 +1,9 @@
+EBMAforecast-package    Ensemble BMA For Binary Dependent Variables
+Ensemble.logit          Ensemble BMA Logit Function for Binary Outcomes
+Insample                In-Sample Predictions from Seven Forecasting
+                        Models
+Outsample               Out-of-Sample Predictions from the Seven
+                        Forecasting Models
+predict.Ensemble.logit
+                        Generate Out-of-Sample Predictions Using
+                        Ensemble BMA Models for Binary

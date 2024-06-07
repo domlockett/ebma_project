@@ -1,0 +1,69 @@
+This is BibTeX, Version 0.99d (TeX Live 2010)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: NSF_Proposal_v2.01.aux
+The style file: apsr.bst
+Database file #1: Flo_Bib.bib
+Database file #2: masterEBMA.bib
+Repeated entry---line 82 of file masterEBMA.bib
+ : @article{Abramowitz:2008
+ :                         ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 3850 of file masterEBMA.bib
+ : @article{Campbell:1992
+ :                       ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 6527 of file masterEBMA.bib
+ : @article{Fair:1978
+ :                   ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 11840 of file masterEBMA.bib
+ : @article{Krause:1997
+ :                     ,
+I'm skipping whatever remains of this entry
+Warning--I didn't find a database entry for "Chocuri:Robinson:1978"
+Warning--empty note in Fair2011
+Warning--empty note in Graefe:2010
+Warning--there's a number but no volume in Hamill:2004
+Warning--empty note in Hibbs2011
+You've used 71 entries,
+            2874 wiz_defined-function locations,
+            1115 strings with 15983 characters,
+and the built_in function-call counts, 285532 in all, are:
+= -- 46709
+> -- 3218
+< -- 1
++ -- 21781
+- -- 1153
+* -- 24403
+:= -- 57431
+add.period$ -- 286
+call.type$ -- 71
+change.case$ -- 924
+chr.to.int$ -- 71
+cite$ -- 75
+duplicate$ -- 1058
+empty$ -- 2448
+format.name$ -- 1229
+if$ -- 51309
+int.to.chr$ -- 5
+int.to.str$ -- 0
+missing$ -- 69
+newline$ -- 295
+num.names$ -- 812
+pop$ -- 227
+preamble$ -- 1
+purify$ -- 1065
+quote$ -- 0
+skip$ -- 917
+stack$ -- 0
+substring$ -- 65927
+swap$ -- 140
+text.length$ -- 995
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 278
+warning$ -- 4
+while$ -- 1658
+width$ -- 0
+write$ -- 972
+(There were 4 error messages)
