@@ -3,15 +3,35 @@
 The EBMA (Ensemble Bayesian Model Averaging) project aimed to improve predictive accuracy in presidential forecasting by combining multiple models and accounting for their uncertainties. The approach leveraged Bayesian statistics to calculate the weights of each model based on their historical performance and prediction accuracy.
 
 
+
 ### Goals:
 1. **Improve Predictive Accuracy**: By integrating various models, the project seeks to enhance overall forecast precision.
 2. **Manage Model Uncertainty**: EBMA adjusts for uncertainties in individual models, providing a more robust prediction.
 
 ### Methods:
-- **Data Preparation**: Clean and prepare datasets for analysis.
-- **Model Training**: Train multiple predictive models, including Random Forest, SVM, GBM, k-NN, Linear Regression, Logistic Regression, and Bayesian Model Averaging.
-- **Bayesian Model Averaging**: Combine model predictions by calculating weights based on posterior probabilities, iteratively updating these weights to minimize errors.
-- **Evaluation and Visualization**: Assess model performance using metrics like RMSE, MAE, accuracy, and visualize results with plots for better interpretation.
+
+1. **Data Preparation**:
+   - Preprocesses the data, handling missing values and normalizing features.
+   - Splits data into training and testing sets.
+
+2. **Training Models**:
+   - **Random Forest**: Utilizes the `randomForest` package to train the model, with hyperparameter tuning for the number of trees and maximum depth.
+   - **SVM**: Uses the `e1071` package, tuning the cost and gamma parameters.
+   - **GBM**: Employs the `gbm` package, adjusting parameters such as the number of trees, interaction depth, and learning rate.
+   - **k-NN**: Uses the `class` package, tuning the number of neighbors (k).
+   - **Linear Regression**: Implements using the `lm` function, straightforward with minimal hyperparameter tuning.
+   - **Logistic Regression**: Uses the `glm` function with a binomial family for binary outcomes.
+   - **Bayesian Model Averaging**: Combines predictions from the above models using the EBMA approach to account for uncertainty.
+
+3. **Model Evaluation**:
+   - Evaluates each model's performance using metrics such as RMSE, MAE, accuracy, and precision.
+   - Uses cross-validation to ensure robustness and prevent overfitting.
+
+4. **Ensemble Averaging**:
+   - Implements EBMA by calculating the weights for each model based on their performance on the validation set.
+   - Iteratively updates these weights to minimize prediction errors, combining the strengths of each model.
+
+This comprehensive approach ensures that the combined model, created using EBMA, leverages the strengths and compensates for the weaknesses of individual models, providing a more robust and accurate prediction system.
 
 ### Core Concepts
 - **Ensemble Learning**: EBMA uses ensemble learning to combine multiple models, enhancing predictive performance.
@@ -65,30 +85,6 @@ For more detailed insights, you can read the full article: [2012 Article on EBMA
 By categorizing these models into parametric and non-parametric, we highlight their underlying assumptions and their suitability for different types of predictive modeling tasks. This categorization helps in understanding the strengths and limitations of each model in the context of the Ensemble Bayesian Model Averaging (EBMA) approach used in the project. For more details, explore the repository: [EBMA_experiments](https://github.com/domlockett/ebma_project/tree/main/EBMA_experiments/Scripts).
 ### Detailed Review of `model_training.R` Script
 
-The `model_training.R` script is responsible for training these seven models:
-
-1. **Data Preparation**:
-   - Preprocesses the data, handling missing values and normalizing features.
-   - Splits data into training and testing sets.
-
-2. **Training Models**:
-   - **Random Forest**: Utilizes the `randomForest` package to train the model, with hyperparameter tuning for the number of trees and maximum depth.
-   - **SVM**: Uses the `e1071` package, tuning the cost and gamma parameters.
-   - **GBM**: Employs the `gbm` package, adjusting parameters such as the number of trees, interaction depth, and learning rate.
-   - **k-NN**: Uses the `class` package, tuning the number of neighbors (k).
-   - **Linear Regression**: Implements using the `lm` function, straightforward with minimal hyperparameter tuning.
-   - **Logistic Regression**: Uses the `glm` function with a binomial family for binary outcomes.
-   - **Bayesian Model Averaging**: Combines predictions from the above models using the EBMA approach to account for uncertainty.
-
-3. **Model Evaluation**:
-   - Evaluates each model's performance using metrics such as RMSE, MAE, accuracy, and precision.
-   - Uses cross-validation to ensure robustness and prevent overfitting.
-
-4. **Ensemble Averaging**:
-   - Implements EBMA by calculating the weights for each model based on their performance on the validation set.
-   - Iteratively updates these weights to minimize prediction errors, combining the strengths of each model.
-
-This comprehensive approach ensures that the combined model, created using EBMA, leverages the strengths and compensates for the weaknesses of individual models, providing a more robust and accurate prediction system.
 
 ## Acknowledgments
 
