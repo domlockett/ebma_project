@@ -1,7 +1,3 @@
-Here's a revised version of the script, accurately reconstructing the details while maintaining clarity and coherence:
-
----
-
 # EBMA Project
 
 The Ensemble Bayesian Model Averaging (EBMA) project aims to enhance predictive accuracy in presidential forecasting by integrating multiple models and accounting for their uncertainties. This approach utilizes Bayesian statistics to determine the weights of each model based on their historical performance and prediction accuracy.
